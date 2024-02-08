@@ -1,0 +1,59 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.0.0
+MinimumVisualStudioVersion = 10.0.0.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nullean.Xunit.Partitions.Tests", "tests\Nullean.Xunit.Partitions.Tests\Nullean.Xunit.Partitions.Tests.csproj", "{BE04AF1C-20CB-497B-9725-518C0C8109ED}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "scripts", "build\scripts\scripts.fsproj", "{D6997ADC-E933-418E-831C-DE1A78897493}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9C336E9A-3FC8-4F77-A5B4-1D07E4E54924}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0F267D58-B5AA-4D04-B346-12B283E37B68}"
+ProjectSection(SolutionItems) = preProject
+	tests\Directory.Build.props = tests\Directory.Build.props
+EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E89606EC-111B-4151-997C-8006627F1926}"
+ProjectSection(SolutionItems) = preProject
+	dotnet-tools.json = dotnet-tools.json
+	readme.md = readme.md
+	build.sh = build.sh
+	build.bat = build.bat
+	Directory.Build.props = Directory.Build.props
+	global.json = global.json
+	.editorconfig = .editorconfig
+	.gitignore = .gitignore
+	.github\workflows\ci.yml = .github\workflows\ci.yml
+EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nullean.Xunit.Partitions", "src\Nullean.Xunit.Partitions\Nullean.Xunit.Partitions.csproj", "{EB5C410D-7820-4CEC-A7D3-55289A1C995B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BE04AF1C-20CB-497B-9725-518C0C8109ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE04AF1C-20CB-497B-9725-518C0C8109ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE04AF1C-20CB-497B-9725-518C0C8109ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE04AF1C-20CB-497B-9725-518C0C8109ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6997ADC-E933-418E-831C-DE1A78897493}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6997ADC-E933-418E-831C-DE1A78897493}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6997ADC-E933-418E-831C-DE1A78897493}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6997ADC-E933-418E-831C-DE1A78897493}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB5C410D-7820-4CEC-A7D3-55289A1C995B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB5C410D-7820-4CEC-A7D3-55289A1C995B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB5C410D-7820-4CEC-A7D3-55289A1C995B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB5C410D-7820-4CEC-A7D3-55289A1C995B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BE04AF1C-20CB-497B-9725-518C0C8109ED} = {0F267D58-B5AA-4D04-B346-12B283E37B68}
+		{D6997ADC-E933-418E-831C-DE1A78897493} = {E89606EC-111B-4151-997C-8006627F1926}
+		{EB5C410D-7820-4CEC-A7D3-55289A1C995B} = {9C336E9A-3FC8-4F77-A5B4-1D07E4E54924}
+	EndGlobalSection
+EndGlobal
