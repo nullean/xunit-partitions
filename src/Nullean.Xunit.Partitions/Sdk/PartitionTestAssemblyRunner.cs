@@ -17,14 +17,14 @@ using Xunit.Sdk;
 namespace Nullean.Xunit.Partitions.Sdk;
 
 // ReSharper disable once UnusedTypeParameter
-public class PartitioningTestAssemblyRunner(
+public class PartitionTestAssemblyRunner(
 	ITestAssembly testAssembly,
 	IEnumerable<IXunitTestCase> testCases,
 	IMessageSink diagnosticMessageSink,
 	IMessageSink executionMessageSink,
 	ITestFrameworkExecutionOptions executionOptions
 )
-	: PartitioningTestAssemblyRunner<IPartitionLifetime>(
+	: PartitionTestAssemblyRunner<IPartitionLifetime>(
 		testAssembly, testCases, diagnosticMessageSink, executionMessageSink, executionOptions, typeof(IPartitionFixture<>)
 	)
 {
@@ -50,7 +50,7 @@ public class PartitionTests
 	public List<IXunitTestCase> TestCases { get; set; } = null!;
 }
 
-public abstract class PartitioningTestAssemblyRunner<TState> : XunitTestAssemblyRunner
+public abstract class PartitionTestAssemblyRunner<TState> : XunitTestAssemblyRunner
 	where TState : class
 {
 	private readonly Type _fixtureType;
@@ -71,7 +71,7 @@ public abstract class PartitioningTestAssemblyRunner<TState> : XunitTestAssembly
 
 	private Regex? TestRegex { get; }
 
-	protected PartitioningTestAssemblyRunner(ITestAssembly testAssembly,
+	protected PartitionTestAssemblyRunner(ITestAssembly testAssembly,
 		IEnumerable<IXunitTestCase> testCases,
 		IMessageSink diagnosticMessageSink,
 		IMessageSink executionMessageSink,

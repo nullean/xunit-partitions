@@ -10,12 +10,12 @@ using Xunit.Sdk;
 
 namespace Nullean.Xunit.Partitions.Sdk;
 
-internal class PartitioningTestFrameworkDiscoverer<TOptions> : XunitTestFrameworkDiscoverer
+internal class PartitionTestFrameworkDiscoverer<TOptions> : XunitTestFrameworkDiscoverer
 	where TOptions : PartitionOptions, new()
 {
 	private readonly Type _fixtureOpenGeneric;
 
-	public PartitioningTestFrameworkDiscoverer(
+	public PartitionTestFrameworkDiscoverer(
 		IAssemblyInfo assemblyInfo,
 		ISourceInformationProvider sourceProvider,
 		IMessageSink diagnosticMessageSink,
@@ -43,7 +43,7 @@ internal class PartitioningTestFrameworkDiscoverer<TOptions> : XunitTestFramewor
 	{
 		if (PartitionRegex == null) return base.IsValidTestClass(type);
 
-		var partitionFixtureType = PartitioningTestAssemblyRunner.GetPartitionFixtureType(type, _fixtureOpenGeneric);
+		var partitionFixtureType = PartitionTestAssemblyRunner.GetPartitionFixtureType(type, _fixtureOpenGeneric);
 		return partitionFixtureType == null
 			? base.IsValidTestClass(type)
 			: PartitionRegex.IsMatch(partitionFixtureType.Name);

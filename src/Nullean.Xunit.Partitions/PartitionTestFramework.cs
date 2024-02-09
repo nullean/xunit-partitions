@@ -29,7 +29,7 @@ public static class Partition
 /// </summary>
 // ReSharper disable once ClassNeverInstantiated.Global
 public class PartitionTestFramework(IMessageSink sink)
-	: PartitionTestFramework<PartitionOptions, PartitioningTestRunnerFactory, TestFrameworkDiscovererFactory>
+	: PartitionTestFramework<PartitionOptions, PartitionTestRunnerFactory, TestFrameworkDiscovererFactory>
 		(sink);
 
 public abstract class PartitionTestFramework<TOptions, TRunnerFactory, TDiscoverFactory>(IMessageSink sink)
@@ -48,7 +48,7 @@ public abstract class PartitionTestFramework<TOptions, TRunnerFactory, TDiscover
 		var assembly = Assembly.Load(assemblyName);
 		var options = PartitionOptionsAttribute.GetOptions<TOptions>(assembly);
 
-		return new PartitioningTestFrameworkExecutor<TOptions, TRunnerFactory>(options, assemblyName, SourceInformationProvider, DiagnosticMessageSink);
+		return new PartitionTestFrameworkExecutor<TOptions, TRunnerFactory>(options, assemblyName, SourceInformationProvider, DiagnosticMessageSink);
 	}
 
 }

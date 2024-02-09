@@ -11,7 +11,7 @@ using Xunit.Sdk;
 
 namespace Nullean.Xunit.Partitions.Sdk;
 
-internal class PartitioningTestFrameworkExecutor<TOptions, TRunnerFactory>(
+internal class PartitionTestFrameworkExecutor<TOptions, TRunnerFactory>(
 	TOptions options,
 	AssemblyName a,
 	ISourceInformationProvider sip,
@@ -57,7 +57,7 @@ internal class PartitioningTestFrameworkExecutor<TOptions, TRunnerFactory>(
 			using var runner = RunnerFactory.Create(TestAssembly, testCases, DiagnosticMessageSink, sink, options);
 			Options.OnBeforeTestsRun();
 			await runner.RunAsync().ConfigureAwait(false);
-			if (runner is PartitioningTestAssemblyRunner a)
+			if (runner is PartitionTestAssemblyRunner a)
 				Options.OnTestsFinished(a.ClusterTotals, a.FailedCollections);
 		}
 		catch (Exception e)

@@ -15,12 +15,12 @@ public interface ITestAssemblyRunnerFactory
 	);
 }
 
-public class PartitioningTestRunnerFactory : ITestAssemblyRunnerFactory
+public class PartitionTestRunnerFactory : ITestAssemblyRunnerFactory
 {
 	public XunitTestAssemblyRunner Create(ITestAssembly testAssembly, IEnumerable<IXunitTestCase> testCases,
 		IMessageSink diagnosticMessageSink,
 		IMessageSink executionMessageSink, ITestFrameworkExecutionOptions executionOptions) =>
-		new PartitioningTestAssemblyRunner(testAssembly, testCases, diagnosticMessageSink, executionMessageSink,
+		new PartitionTestAssemblyRunner(testAssembly, testCases, diagnosticMessageSink, executionMessageSink,
 			executionOptions);
 }
 
