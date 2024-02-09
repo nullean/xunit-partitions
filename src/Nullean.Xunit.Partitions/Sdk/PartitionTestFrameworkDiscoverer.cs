@@ -10,7 +10,7 @@ using Xunit.Sdk;
 
 namespace Nullean.Xunit.Partitions.Sdk;
 
-internal class PartitionTestFrameworkDiscoverer<TOptions> : XunitTestFrameworkDiscoverer
+public class PartitionTestFrameworkDiscoverer<TOptions> : XunitTestFrameworkDiscoverer
 	where TOptions : PartitionOptions, new()
 {
 	private readonly Type _fixtureOpenGeneric;
