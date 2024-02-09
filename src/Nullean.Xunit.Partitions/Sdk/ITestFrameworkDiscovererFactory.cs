@@ -16,6 +16,6 @@ public class TestFrameworkDiscovererFactory : ITestFrameworkDiscovererFactory
 		IAssemblyInfo assemblyInfo, ISourceInformationProvider sourceProvider, IMessageSink diagnosticMessageSink
 	)
 		where TOptions : PartitionOptions, new() =>
-		new PartitioningTestFrameworkDiscoverer<TOptions>(assemblyInfo, sourceProvider, diagnosticMessageSink, typeof(IPartitionFixture<>));
+		new PartitionTestFrameworkDiscoverer<TOptions>(assemblyInfo, sourceProvider, diagnosticMessageSink, typeof(IPartitionFixture<>));
 }
 
