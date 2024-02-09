@@ -68,10 +68,11 @@ let private generateApiChanges (arguments:ParseResults<Arguments>) =
     let output = Paths.RootRelative <| Paths.Output.FullName
     let currentVersion = currentVersion.Value
     let nugetPackages =
-        Paths.Output.GetFiles("*.nupkg") |> Seq.sortByDescending(fun f -> f.CreationTimeUtc)
+        Paths.Output.GetFiles("*.nupkg") |> Seq.sortByDescending(_.CreationTimeUtc)
         |> Seq.map (fun p -> Path.GetFileNameWithoutExtension(Paths.RootRelative p.FullName).Replace("." + currentVersion, ""))
     nugetPackages
     |> Seq.iter(fun p ->
+        printfn "(%s) -> (%s)" p currentVersion
         let outputFile =
             let f = sprintf "breaking-changes-%s.md" p
             Path.Combine(output, f)

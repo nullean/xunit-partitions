@@ -3,8 +3,8 @@ module Paths
 open System
 open System.IO
 
-let ToolName = "proc"
-let Repository = sprintf "nullean/%s" ToolName
+let ToolName = "Nullean.Xunit.Partitions"
+let Repository = "nullean/xunit-partitions" 
 let MainTFM = "netstandard2.0"
 let SignKey = "96c599bbe3e70f5d"
 
