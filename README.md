@@ -2,6 +2,9 @@
 
 <a href="https://www.nuget.org/packages/Nullean.Xunit.Partitions/"><img src="https://img.shields.io/nuget/v/Nullean.Xunit.Partitions?color=blue&style=plastic" /></a>
 
+<img src="https://github.com/nullean/xunit-partitions/raw/main/nuget-icon.png" align="right"
+title="Logo " width="220" height="220">
+
 An `XunitTestFramework` implementation that introduces the concept of "partitions".
 
 A `IPartitionFixture{TLifetime}` allows tests to inject a long lived object to share.
@@ -16,8 +19,7 @@ In fact each `IPartitionFixture{TLifetime}` can declare its own desired concurre
 If you want to share a few (say 0-20) long running objects over 1000's of tests this library will work for you. 
 If you instead have many test collections each with only a few tests xUnit native collections will suit better.
 
-<img src="https://github.com/nullean/xunit-partitions/raw/main/nuget-icon.png" align="right"
-     title="Logo " width="220" height="220">
+Because each partititon only calls `InitializeAsync` and `DisposeAsync` just before and after its test will run this makes it more appropiate then assembly fixtures which might bootstrap too early and dispose too late.
 
 ## Setup
 
@@ -120,6 +122,8 @@ public class SharedState2Class(LongLivedObject longLivedObject) : IPartitionFixt
 
 `SharedState1Class` and `SharedState2Class` both depend on `LongLivedObject` and so will receive a single shared 
 instance AFTER `InitializeAsync` has run. The tests of each **will** run concurrently. 
+
+`DisposeAsync` will run before the next partition's state will `InitializeAsync`
 
 
 `NoStateClass` does not belong to any partition. All tests with no partitions are treated as part of an empty partition. 
