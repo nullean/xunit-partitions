@@ -3,18 +3,15 @@
 // See the LICENSE file in the project root for more information
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Nullean.Xunit.Partitions.Sdk;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Nullean.Xunit.Partitions;
+namespace Nullean.Xunit.Partitions.Sdk;
 
 internal class PartitioningTestFrameworkDiscoverer<TOptions> : XunitTestFrameworkDiscoverer
-	where TOptions : PartitioningRunOptions, new()
+	where TOptions : PartitionOptions, new()
 {
 	private readonly Type _fixtureOpenGeneric;
 
@@ -27,11 +24,11 @@ internal class PartitioningTestFrameworkDiscoverer<TOptions> : XunitTestFramewor
 	{
 		_fixtureOpenGeneric = fixtureOpenGeneric;
 		var a = Assembly.Load(new AssemblyName(assemblyInfo.Name));
-		Options = PartitioningConfigurationAttribute.GetOptions<TOptions>(a);
+		Options = PartitionOptionsAttribute.GetOptions<TOptions>(a);
 		PartitionRegex = Options.PartitionFilterRegex != null ? new Regex(Options.PartitionFilterRegex) : null;
 	}
 
-	public Regex? PartitionRegex { get; }
+	private Regex? PartitionRegex { get; }
 
 	private TOptions Options { get; }
 

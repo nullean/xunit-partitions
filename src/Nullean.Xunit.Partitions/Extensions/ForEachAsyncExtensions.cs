@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Nullean.Xunit.Partitions;
+namespace Nullean.Xunit.Partitions.Extensions;
 
 internal static class ForEachAsyncExtensions
 {

@@ -1,161 +1,131 @@
-# Proc
+# Nullean.Xunit.Partitions
 
-<a href="https://www.nuget.org/packages/Proc/"><img src="https://img.shields.io/nuget/v/Proc?color=blue&style=plastic" /></a>
+<a href="https://www.nuget.org/packages/Nullean.Xunit.Partitions/"><img src="https://img.shields.io/nuget/v/Nullean.Xunit.Partitions?color=blue&style=plastic" /></a>
+
+An `XunitTestFramework` implementation that introduces the concept of "partitions".
+
+A `IPartitionFixture{TLifetime}` allows tests to inject a long lived object to share.
+
+Only a single partition will run at a time in contrast with xUnit's `ICollectionFixture{TFixture}`
+However unlike `ICollectionFixture{TFixture}` this library's `IPartitionFixture{TLifetime}`
+does not mark a concurrency barrier, tests belonging to a single **partition still run concurrently**
+
+In fact each `IPartitionFixture{TLifetime}` can declare its own desired concurrency through
+`IPartitionLifetime.MaxConcurrency`
+
+If you want to share a few (say 0-20) long running objects over 1000's of tests this library will work for you. 
+If you instead have many test collections each with only a few tests xUnit native collections will suit better.
 
 <img src="https://github.com/nullean/proc/raw/master/build/nuget-icon.png" align="right"
      title="Logo " width="220" height="220">
 
-A dependency free `System.Diagnostics.Process` supercharger. 
+## Setup
 
-1. `Proc.Exec()` for the quick one-liners
-2. `Proc.Start()` for the quick one-liners 
-   - Use if you want to capture the console output as well as print these message in real time.
-   - Proc.Start() also allows you to script StandardIn and react to messages
-3. Wraps `System.Diagnostics.Process` as an `IObservable` 
-    * `ProcessObservable` stream based wrapper
-    * `EventBasedObservableProcess` event based wrapper
-4. Built in support to send `SIGINT` to any process before doing a hard `SIGKILL` (`Process.Kill()`)
-    * Has to be set using `SendControlCFirst = true` on `StartArguments`
-    
-## Proc.Exec
-
-Execute a process and blocks using a default timeout of 4 minutes. This method uses the same console session
-as and as such will print the binaries console output. Throws a `ProcExecException` if the command fails to execute.
-See also `ExecArguments` for more options
+Provide the following Assembly level attribute anywhere in your test project.
 
 ```csharp
-Proc.Exec("ipconfig", "/all");
+using Nullean.Xunit.Partitions;
+using Xunit;
+[assembly: TestFramework(Partition.TestFramework, Partition.Assembly)]
 ```
 
-## Proc.Start
+This will ensure xUnit bootstraps the partition test framework shipped with this library.
 
-start a process and block using the default timeout of 4 minutes
+
+## Providing options
+
+Options to control the parition test framework can be provided similarly through the `PartitonOptions` Assembly level
+attribute.
+
+Here you can control filters to only run certain partitions and/or tests.
+
+#### Setup.cs
 ```csharp
-var result = Proc.Start("ipconfig", "/all");
-```
+using Nullean.Xunit.Partitions;
+using My.Tests;
+using Xunit;
 
-Provide a custom timeout and an `IConsoleOutWriter` that can output to console 
-while this line is blocking. The following example writes `stderr` in red.
+[assembly: TestFramework(Partition.TestFramework, Partition.Assembly)]
+//optional only needed if you want to specify execution options to PartitionTestFramework
+[assembly: PartitionOptions(typeof(MyPartitioningOptions))]
 
-```csharp
-var result = Proc.Start("ipconfig", TimeSpan.FromSeconds(10), new ConsoleOutColorWriter());
-```
+namespace My.Tests;
 
-More options can be passed by passing `StartArguments` instead to control how the process should start.
-
-```csharp
-var args = new StartArguments("ipconfig", "/all")
+/// <summary> Allows us to control the xunit partitioning test pipeline </summary>
+public class MyPartitioningOptions : PartitionOptions
 {
-  WorkingDirectory = ..
-}
-Proc.Start(args, TimeSpan.FromSeconds(10));
-```
-
-The static  `Proc.Start` has a timeout of `4 minutes` if not specified.
-
-`result` has the following properties
-
-* `Completed` true if the program completed before the timeout
-* `ConsoleOut` a list the console out message as `LineOut` 
-   instances where `Error` on each indicating whether it was written on `stderr` or not
-* `ExitCode` 
-
-**NOTE** `ConsoleOut` will always be set regardless of whether an `IConsoleOutWriter` is provided
-
-## ObservableProcess
-
-The heart of it all this is an `IObservable<CharactersOut>`. It listens on the output buffers directly and does not wait on 
-newlines to emit.
-
-To create an observable process manually follow the following pattern:
-
-```csharp
-using (var p = new ObservableProcess(args))
-{
-	p.Subscribe(c => Console.Write(c.Characters));
-	p.WaitForCompletion(TimeSpan.FromSeconds(2));
-}
-```
-
-The observable is `cold` untill subscribed and is not intended to be reused or subscribed to multiple times. If you need to 
-share a subscription look into RX's `Publish`.
-
-The `WaitForCompletion()` call blocks so that `p` is not disposed which would attempt to shutdown the started process.
-
-The default for doing a shutdown is through `Process.Kill` this is a hard `SIGKILL` on the process.
-
-The cool thing about `Proc` is that it supports `SIGINT` interoptions as well to allow for processes to be cleanly shutdown. 
-
-```csharp
-var args = new StartArguments("elasticsearch.bat")
-{
-	SendControlCFirst = true
-};
-```
-
-This will attempt to send a `Control+C` into the running process console on windows first before falling back to `Process.Kill`. 
-Linux and OSX support for this flag is still in the works so thats why this behaviour is opt in.
-
-
-Dealing with `byte[]` characters might not be what you want to program against, so `ObservableProcess` allows the following as well.
-
-
-```csharp
-using (var p = new ObservableProcess(args))
-{
-	p.SubscribeLines(c => Console.WriteLine(c.Line));
-	p.WaitForCompletion(TimeSpan.FromSeconds(2));
-}
-```
-
-Instead of proxying `byte[]` as they are received on the socket this buffers and only emits on lines. 
-
-In some cases it can be very useful to introduce your own word boundaries
-
-```csharp
-public class MyProcObservable : ObservableProcess
-{
-	public MyProcObservable(string binary, params string[] arguments) : base(binary, arguments) { }
-
-	public MyProcObservable(StartArguments startArguments) : base(startArguments) { }
-
-	protected override bool BufferBoundary(char[] stdOut, char[] stdErr)
+	public MyPartitioningOptions()
 	{
-		return base.BufferBoundary(stdOut, stdErr);
+		PartitionFilterRegex = "LongLivedObject";
+		TestFilterRegex = null;
 	}
 }
+
 ```
 
-returning true inside `BufferBoundary` will yield the line to `SubscribeLine()`. This could be usefull e.g if your process 
-prompts without a new line:
+## Usage
 
-> Continue [Y/N]: <no newline here>
-
-A more concrete example of this is when you call a `bat` file on windows and send a `SIGINT` signal it will *always* prompt:
-
-> Terminate batch job (Y/N)?
-
-Which would not yield to `SubscribeLines` and block any waithandles unnecessary. `ObservableProcess` handles this edgecase
-therefor OOTB and automatically replies with `Y` on `stdin` in this case.
-
-Also note that `ObservableProcess` will yield whatever is in the buffer before OnCompleted().
+```csharp
+namespace Nullean.Xunit.Partitions.Tests;
 
 
-# EventBasedObservable
+public class NoStateClass
+{
+	[Fact]
+	public void SimpleTest() => 1.Should().Be(1);
+}
 
-`ObservableProcess`'s sibbling that utilizes `OutputDataReceived` and `ErrorDataReceived` and can only emit lines.
+public class LongLivedObject : IPartitionLifetime
+{
+	private static long _initialized;
+	private static long _disposed;
+
+	public long Initialized => _initialized;
+	public long Disposed => _disposed;
+
+	public Task InitializeAsync()
+	{
+		Interlocked.Increment(ref _initialized);
+		return Task.CompletedTask;
+	}
+
+	public Task DisposeAsync()
+	{
+		Interlocked.Increment(ref _disposed);
+		return Task.CompletedTask;
+	}
+
+	public int? MaxConcurrency => null;
+}
+
+public class SharedState1Class(LongLivedObject longLivedObject) : IPartitionFixture<LongLivedObject>
+{
+	[Fact]
+	public void StaticInitializedShouldNotIncrease() => longLivedObject.Initialized.Should().Be(1);
+
+	[Fact]
+	public void DisposeShouldNotHaveHappened() => longLivedObject.Disposed.Should().Be(0);
+}
+
+public class SharedState2Class(LongLivedObject longLivedObject) : IPartitionFixture<LongLivedObject>
+{
+	[Fact]
+	public void StaticInitializedShouldNotIncrease() => longLivedObject.Initialized.Should().Be(1);
+
+	[Fact]
+	public void DisposeShouldNotHaveHappened() => longLivedObject.Disposed.Should().Be(0);
+}
+
+```
+
+`SharedState1Class` and `SharedState2Class` both depend on `LongLivedObject` and so will receive a single shared 
+instance AFTER `InitializeAsync` has run. The tests of each **will** run concurrently. 
 
 
+`NoStateClass` does not belong to any partition. All tests with no partitions are treated as part of an empty partition. 
+These tests will all run concurrently too.
 
+However no partition will ever run concurrently with another **by design**. 
 
-
-
-
-
-
-
-
-
-
-
-
+This allows partition's state to run expensive operations (e.g starting docker containers, processes, bootstrap playwright states),
+in isolation.

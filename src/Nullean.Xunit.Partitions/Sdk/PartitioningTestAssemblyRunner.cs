@@ -10,26 +10,24 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
+using Nullean.Xunit.Partitions.Extensions;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Nullean.Xunit.Partitions.Sdk;
 
 // ReSharper disable once UnusedTypeParameter
-public class PartitioningTestAssemblyRunner : PartitioningTestAssemblyRunner<IPartitionLifetime>
+public class PartitioningTestAssemblyRunner(
+	ITestAssembly testAssembly,
+	IEnumerable<IXunitTestCase> testCases,
+	IMessageSink diagnosticMessageSink,
+	IMessageSink executionMessageSink,
+	ITestFrameworkExecutionOptions executionOptions
+)
+	: PartitioningTestAssemblyRunner<IPartitionLifetime>(
+		testAssembly, testCases, diagnosticMessageSink, executionMessageSink, executionOptions, typeof(IPartitionFixture<>)
+	)
 {
-	public PartitioningTestAssemblyRunner(
-		ITestAssembly testAssembly,
-		IEnumerable<IXunitTestCase> testCases,
-		IMessageSink diagnosticMessageSink,
-		IMessageSink executionMessageSink,
-		ITestFrameworkExecutionOptions executionOptions)
-		: base(testAssembly, testCases, diagnosticMessageSink, executionMessageSink, executionOptions,
-			typeof(IPartitionFixture<>))
-	{
-	}
-
 	protected override async Task UseStateAndRun(IPartitionLifetime partition, Func<int?, Task> runGroup)
 	{
 		await using (partition)
@@ -58,7 +56,7 @@ public abstract class PartitioningTestAssemblyRunner<TState> : XunitTestAssembly
 	private readonly Type _fixtureType;
 	private readonly Dictionary<Type, TState> _partitionFixtureInstances = new();
 
-	private Dictionary<NullableKeyType, IEnumerable<PartitionTests>> Partitionings { get; }
+	private Dictionary<NullableKeyType, IEnumerable<PartitionTests>> Partitions { get; }
 
 	//threading guess
 	private static int DefaultConcurrency => Environment.ProcessorCount * 4;
@@ -81,9 +79,9 @@ public abstract class PartitioningTestAssemblyRunner<TState> : XunitTestAssembly
 		: base(testAssembly, testCases, diagnosticMessageSink, executionMessageSink, executionOptions)
 	{
 		_fixtureType = fixtureType;
-		var partitionRe = executionOptions.GetValue<string>(nameof(PartitioningRunOptions.PartitionFilterRegex));
+		var partitionRe = executionOptions.GetValue<string>(nameof(PartitionOptions.PartitionFilterRegex));
 		PartitionRegex = partitionRe == null ? null : new Regex(partitionRe);
-		var testRe = executionOptions.GetValue<string>(nameof(PartitioningRunOptions.TestFilterRegex));
+		var testRe = executionOptions.GetValue<string>(nameof(PartitionOptions.TestFilterRegex));
 		TestRegex = testRe == null ? null : new Regex(testRe);
 
 		var testCollections = OrderTestCollections();
@@ -100,15 +98,15 @@ public abstract class PartitioningTestAssemblyRunner<TState> : XunitTestAssembly
 			}
 			select testcase;
 
-		Partitionings = cases
+		Partitions = cases
 			.GroupBy(c => c.FixtureLifetimeType)
 			.OrderBy(g => g.Count())
 			.ToDictionary(k => new NullableKeyType { Type = k.Key }, v => v.Select(g => g));
 
 		// types need to be instantiated ahead of time in order for xunit constructor injection checks.
-		foreach (var partitioning in Partitionings)
+		foreach (var partition in Partitions)
 		{
-			var partitionType = partitioning.Key.Type;
+			var partitionType = partition.Key.Type;
 			if (partitionType == null)
 				continue;
 
@@ -135,8 +133,9 @@ public abstract class PartitioningTestAssemblyRunner<TState> : XunitTestAssembly
 
 	// ReSharper disable once UnusedMember.Global
 	protected async Task<RunSummary> RunAllWithoutPartitionFixture(IMessageBus bus, CancellationTokenSource ctx) =>
-		await RunWithoutPartitionFixture(Partitionings.SelectMany(g => g.Value), bus, ctx).ConfigureAwait(false);
+		await RunWithoutPartitionFixture(Partitions.SelectMany(g => g.Value), bus, ctx).ConfigureAwait(false);
 
+	// ReSharper disable once MemberCanBePrivate.Global
 	protected async Task<RunSummary> RunWithoutPartitionFixture(
 		IEnumerable<PartitionTests> partitionTests,
 		IMessageBus messageBus, CancellationTokenSource ctx)
@@ -155,9 +154,10 @@ public abstract class PartitioningTestAssemblyRunner<TState> : XunitTestAssembly
 	protected override async Task<RunSummary> RunTestCollectionsAsync(IMessageBus bus, CancellationTokenSource ctx) =>
 		await RunAllTests(bus, ctx).ConfigureAwait(false);
 
+	// ReSharper disable once MemberCanBePrivate.Global
 	protected async Task<RunSummary> RunAllTests(IMessageBus messageBus, CancellationTokenSource ctx)
 	{
-		foreach (var partitioning in Partitionings)
+		foreach (var partitioning in Partitions)
 		{
 			var partitionType = partitioning.Key.Type;
 			if (partitionType == null)

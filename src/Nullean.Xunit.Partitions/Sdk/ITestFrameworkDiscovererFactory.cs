@@ -7,7 +7,7 @@ public interface ITestFrameworkDiscovererFactory
 {
 	XunitTestFrameworkDiscoverer Create<TOptions>(
 		IAssemblyInfo assemblyInfo, ISourceInformationProvider sourceProvider, IMessageSink diagnosticMessageSink)
-		where TOptions : PartitioningRunOptions, new();
+		where TOptions : PartitionOptions, new();
 }
 
 public class TestFrameworkDiscovererFactory : ITestFrameworkDiscovererFactory
@@ -15,7 +15,7 @@ public class TestFrameworkDiscovererFactory : ITestFrameworkDiscovererFactory
 	public XunitTestFrameworkDiscoverer Create<TOptions>(
 		IAssemblyInfo assemblyInfo, ISourceInformationProvider sourceProvider, IMessageSink diagnosticMessageSink
 	)
-		where TOptions : PartitioningRunOptions, new() =>
+		where TOptions : PartitionOptions, new() =>
 		new PartitioningTestFrameworkDiscoverer<TOptions>(assemblyInfo, sourceProvider, diagnosticMessageSink, typeof(IPartitionFixture<>));
 }
 

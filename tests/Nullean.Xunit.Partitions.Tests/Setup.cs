@@ -2,17 +2,16 @@ using Nullean.Xunit.Partitions;
 using Nullean.Xunit.Partitions.Tests;
 using Xunit;
 
-[assembly: TestFramework("Nullean.Xunit.Partitions.PartitioningTestFramework", "Nullean.Xunit.Partitions")]
-[assembly: PartitioningConfiguration(typeof(MyRunOptions))]
+[assembly: TestFramework(Partition.TestFramework, Partition.Assembly)]
+//optional only needed if you want to specify execution options to PartitionTestFramework
+[assembly: PartitionOptions(typeof(MyPartitioningOptions))]
 
 namespace Nullean.Xunit.Partitions.Tests;
 
-/// <summary>
-///     Allows us to control the custom xunit test pipeline
-/// </summary>
-public class MyRunOptions : PartitioningRunOptions
+/// <summary> Allows us to control the xunit partitioning test pipeline </summary>
+public class MyPartitioningOptions : PartitionOptions
 {
-	public MyRunOptions()
+	public MyPartitioningOptions()
 	{
 		PartitionFilterRegex = "LongLivedObject";
 		TestFilterRegex = null;

@@ -6,10 +6,32 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>false</ImplicitUsings>
     <LangVersion>latest</LangVersion>
+
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\build\keys\keypair.snk</AssemblyOriginatorKeyFile>
+
+    <PackageIcon>nuget-icon.png</PackageIcon>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/nullean/xunit-partitions</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/nullean/xunit-partitions</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/nullean/xunit-partitions/releases</PackageReleaseNotes>
+
+    <PackageId>Nullean.Xunit.Partitions</PackageId>
+    <Title>Nullean.Xunit.Partitions - xUnit test runner for tests that need to share state</Title>
+    <Description>xUnit partitions for when you need to share long running state between tests</Description>
+
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="xunit" Version="2.4.1" />
+    <Content Include="..\..\README.md" Pack="true" PackagePath="README.md" CopyToOutputDirectory="PreserveNewest"/>
+    <Content Include="..\..\nuget-icon.png" Pack="true" PackagePath="nuget-icon.png" CopyToOutputDirectory="PreserveNewest" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.4.1"/>
   </ItemGroup>
 
 </Project>

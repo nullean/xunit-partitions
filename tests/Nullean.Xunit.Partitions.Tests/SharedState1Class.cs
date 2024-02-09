@@ -47,7 +47,7 @@ public class SharedState2Class(LongLivedObject longLivedObject) : IPartitionFixt
 	public void DisposeShouldNotHaveHappened() => longLivedObject.Disposed.Should().Be(0);
 }
 
-public class NoStateClass()
+public class NoStateClass
 {
 	[Fact]
 	public void SimpleTest() => 1.Should().Be(1);

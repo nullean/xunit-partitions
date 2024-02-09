@@ -4,39 +4,34 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Nullean.Xunit.Partitions;
+namespace Nullean.Xunit.Partitions.Sdk;
 
-internal class TestCollectionRunner : XunitTestCollectionRunner
+internal class TestCollectionRunner(
+	Dictionary<Type, object> assemblyFixtureMappings,
+	ITestCollection testCollection,
+	IEnumerable<IXunitTestCase> testCases,
+	IMessageSink diagnosticMessageSink,
+	IMessageBus messageBus,
+	ITestCaseOrderer testCaseOrderer,
+	ExceptionAggregator aggregator,
+	CancellationTokenSource ctx
+)
+	: XunitTestCollectionRunner(
+		testCollection, testCases, diagnosticMessageSink, messageBus, testCaseOrderer, aggregator, ctx
+	)
 {
-	private readonly Dictionary<Type, object> _assemblyFixtureMappings;
-	private readonly IMessageSink _diagnosticMessageSink;
-
-	public TestCollectionRunner(Dictionary<Type, object> assemblyFixtureMappings,
-		ITestCollection testCollection,
-		IEnumerable<IXunitTestCase> testCases,
-		IMessageSink diagnosticMessageSink,
-		IMessageBus messageBus,
-		ITestCaseOrderer testCaseOrderer,
-		ExceptionAggregator aggregator,
-		CancellationTokenSource cancellationTokenSource)
-		: base(testCollection, testCases, diagnosticMessageSink, messageBus, testCaseOrderer, aggregator,
-			cancellationTokenSource)
-	{
-		_assemblyFixtureMappings = assemblyFixtureMappings;
-		_diagnosticMessageSink = diagnosticMessageSink;
-	}
+	private readonly IMessageSink _diagnosticMessageSink = diagnosticMessageSink;
 
 	protected override Task<RunSummary> RunTestClassAsync(ITestClass testClass, IReflectionTypeInfo @class,
 		IEnumerable<IXunitTestCase> testCases)
 	{
 		// this ensures xunit can constructor inject our partition types
-		var combinedFixtures = new Dictionary<Type, object>(_assemblyFixtureMappings);
+		var combinedFixtures = new Dictionary<Type, object>(assemblyFixtureMappings);
 		foreach (var kvp in CollectionFixtureMappings)
 			combinedFixtures[kvp.Key] = kvp.Value;
 
