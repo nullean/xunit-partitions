@@ -16,7 +16,7 @@ In fact each `IPartitionFixture{TLifetime}` can declare its own desired concurre
 If you want to share a few (say 0-20) long running objects over 1000's of tests this library will work for you. 
 If you instead have many test collections each with only a few tests xUnit native collections will suit better.
 
-<img src="https://github.com/nullean/proc/raw/master/build/nuget-icon.png" align="right"
+<img src="https://github.com/nullean/xunit-partitions/raw/main/nuget-icon.png" align="right"
      title="Logo " width="220" height="220">
 
 ## Setup
