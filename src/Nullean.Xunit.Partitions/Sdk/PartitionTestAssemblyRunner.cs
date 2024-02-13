@@ -28,7 +28,8 @@ public class PartitionTestAssemblyRunner(
 		testAssembly, testCases, diagnosticMessageSink, executionMessageSink, executionOptions, typeof(IPartitionFixture<>)
 	)
 {
-	protected override async Task UseStateAndRun(IPartitionLifetime partition, Func<int?, Task> runGroup)
+	protected override async Task UseStateAndRun(IPartitionLifetime partition, IMessageBus messageBus,
+		Func<int?, Task> runGroup)
 	{
 		await using (partition)
 		{
@@ -111,12 +112,13 @@ public abstract class PartitionTestAssemblyRunner<TState> : XunitTestAssemblyRun
 				continue;
 
 			var state = CreatePartitionStateInstance(partitionType);
-			if (state != null)
-				_partitionFixtureInstances[partitionType] = state;
+			if (state == null) continue;
+
+			_partitionFixtureInstances[partitionType] = state;
 		}
 	}
 
-	protected abstract Task UseStateAndRun(TState state, Func<int?, Task> runGroup);
+	protected abstract Task UseStateAndRun(TState state, IMessageBus messageBus, Func<int?, Task> runGroup);
 
 	protected override Task<RunSummary> RunTestCollectionAsync(
 		IMessageBus b,
@@ -162,17 +164,13 @@ public abstract class PartitionTestAssemblyRunner<TState> : XunitTestAssemblyRun
 			var partitionType = partitioning.Key.Type;
 			if (partitionType == null)
 			{
-				var summary =await RunWithoutPartitionFixture(partitioning.Value, messageBus, ctx).ConfigureAwait(false);
+				var summary = await RunWithoutPartitionFixture(partitioning.Value, messageBus, ctx).ConfigureAwait(false);
 				Summaries.Add(summary);
 				continue;
 			}
 
-			var state = CreatePartitionStateInstance(partitionType);
-			if (state == null)
-			{
-				var testClass = partitioning.Value.Select(g => g.Collection.DisplayName).FirstOrDefault();
-				throw new Exception($"{typeof(TState)} did not yield partition state for e.g: {testClass}");
-			}
+			if (!_partitionFixtureInstances.TryGetValue(partitionType, out var state))
+				continue;
 
 			var partitionName = state.GetType().Name;
 			if (PartitionRegex != null && !PartitionRegex.IsMatch(partitionName))
@@ -188,7 +186,7 @@ public abstract class PartitionTestAssemblyRunner<TState> : XunitTestAssemblyRun
 
 			ClusterTotals.Add(partitionName, Stopwatch.StartNew());
 
-			await UseStateAndRun(state, async (concurrency) =>
+			await UseStateAndRun(state, messageBus, async (concurrency) =>
 			{
 				await RunPartitionGroupConcurrently(partitioning.Value, concurrency, messageBus, ctx)
 					.ConfigureAwait(false);
