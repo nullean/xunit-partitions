@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -51,4 +52,20 @@ public class NoStateClass
 {
 	[Fact]
 	public void SimpleTest() => 1.Should().Be(1);
+}
+
+public class FailingTests : IDisposable
+{
+	[Fact(Skip = "Enabling this would fail CI")]
+	public void OneIsNotZero() => 1.Should().Be(0);
+
+	public void Dispose() => PartitionContext.TestException.Should().NotBeNull();
+}
+
+public class SucceedingTests : IDisposable
+{
+	[Fact]
+	public void OneIsOne() => 1.Should().Be(1);
+
+	public void Dispose() => PartitionContext.TestException.Should().BeNull();
 }
