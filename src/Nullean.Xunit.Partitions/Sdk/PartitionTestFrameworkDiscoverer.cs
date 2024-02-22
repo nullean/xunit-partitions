@@ -39,13 +39,7 @@ public class PartitionTestFrameworkDiscoverer<TOptions> : XunitTestFrameworkDisc
 		return base.FindTestsForType(testClass, includeSourceInformation, messageBus, discoveryOptions);
 	}
 
-	protected override bool IsValidTestClass(ITypeInfo type)
-	{
-		if (PartitionRegex == null) return base.IsValidTestClass(type);
-
-		var partitionFixtureType = PartitionTestAssemblyRunner.GetPartitionFixtureType(type, _fixtureOpenGeneric);
-		return partitionFixtureType == null
-			? base.IsValidTestClass(type)
-			: PartitionRegex.IsMatch(partitionFixtureType.Name);
-	}
+	// leaving this in as a reminder it exists
+	// ReSharper disable once RedundantOverriddenMember
+	protected override bool IsValidTestClass(ITypeInfo type) => base.IsValidTestClass(type);
 }

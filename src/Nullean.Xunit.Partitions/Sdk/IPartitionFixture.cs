@@ -19,7 +19,13 @@ public interface IPartitionFixture<out TLifetime> where TLifetime : IPartitionLi
 /// </summary>
 public interface IPartitionLifetime : IAsyncLifetime
 {
-	public int? MaxConcurrency { get; }
+	int? MaxConcurrency { get; }
+
+	/// <summary>
+	/// Allows a partition to report output to tests if <see cref="IAsyncLifetime.InitializeAsync"/>
+	/// throws an exception.
+	/// </summary>
+	string FailureTestOutput();
 }
 
 public static class PartitionContext

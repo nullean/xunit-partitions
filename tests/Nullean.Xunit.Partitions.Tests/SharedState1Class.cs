@@ -28,6 +28,7 @@ public class LongLivedObject : IPartitionLifetime
 	}
 
 	public int? MaxConcurrency => null;
+	public string FailureTestOutput() => "";
 }
 
 public class SharedState1Class(LongLivedObject longLivedObject) : IPartitionFixture<LongLivedObject>
