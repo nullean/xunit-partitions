@@ -22,6 +22,7 @@ public class PartitionTestFrameworkDiscoverer<TOptions> : XunitTestFrameworkDisc
 		Type fixtureOpenGeneric
 		) : base(assemblyInfo, sourceProvider, diagnosticMessageSink)
 	{
+
 		_fixtureOpenGeneric = fixtureOpenGeneric;
 		var a = Assembly.Load(new AssemblyName(assemblyInfo.Name));
 		Options = PartitionOptionsAttribute.GetOptions<TOptions>(a);

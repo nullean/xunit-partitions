@@ -273,7 +273,6 @@ public abstract class PartitionTestAssemblyRunner<TState> : XunitTestAssemblyRun
 	{
 		foreach (var t in testCases)
 		{
-
 			var test = new NoopTest(t);
 			ExecutionMessageSink.OnMessage(
 				new TestSkipped(test, skipText)
@@ -283,7 +282,7 @@ public abstract class PartitionTestAssemblyRunner<TState> : XunitTestAssemblyRun
 				});
 
 			ExecutionMessageSink.OnMessage(
-				new TestFinished(test, 2, "")
+				new TestFinished(test, 2, "Finished")
 				{
 					TestAssembly = t.TestMethod.TestClass.TestCollection.TestAssembly,
 					TestClass = t.TestMethod.TestClass
