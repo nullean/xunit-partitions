@@ -13,7 +13,7 @@ public class MyPartitioningOptions : PartitionOptions
 {
 	public MyPartitioningOptions()
 	{
-		PartitionFilterRegex = "LongLivedObject";
+		PartitionFilterRegex = "^(?!InitializeThrowsState$).*";
 		TestFilterRegex = null;
 	}
 }
