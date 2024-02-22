@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -28,13 +29,26 @@ public class PartitionTestAssemblyRunner(
 		testAssembly, testCases, diagnosticMessageSink, executionMessageSink, executionOptions, typeof(IPartitionFixture<>)
 	)
 {
-	protected override async Task UseStateAndRun(IPartitionLifetime partition, IMessageBus messageBus,
-		Func<int?, Task> runGroup)
+	protected override async Task UseStateAndRun(
+		IPartitionLifetime partition,
+		Func<int?, Task> runGroup,
+		Func<Exception, string, Task> failAll)
 	{
 		await using (partition)
 		{
-			await partition.InitializeAsync().ConfigureAwait(false);
-			await runGroup(partition.MaxConcurrency).ConfigureAwait(false);
+			var initialized = false;
+			try
+			{
+				await partition.InitializeAsync().ConfigureAwait(false);
+				initialized = true;
+			}
+			catch (Exception e)
+			{
+				DiagnosticMessageSink.OnMessage(new DiagnosticMessage(e.ToString()));
+				await failAll(e,  partition.FailureTestOutput());
+			}
+			if (initialized)
+				await runGroup(partition.MaxConcurrency).ConfigureAwait(false);
 		}
 	}
 }
@@ -118,7 +132,7 @@ public abstract class PartitionTestAssemblyRunner<TState> : XunitTestAssemblyRun
 		}
 	}
 
-	protected abstract Task UseStateAndRun(TState state, IMessageBus messageBus, Func<int?, Task> runGroup);
+	protected abstract Task UseStateAndRun(TState state, Func<int?, Task> runGroup, Func<Exception, string, Task> failAll);
 
 	protected override Task<RunSummary> RunTestCollectionAsync(
 		IMessageBus b,
@@ -169,12 +183,19 @@ public abstract class PartitionTestAssemblyRunner<TState> : XunitTestAssemblyRun
 				continue;
 			}
 
-			if (!_partitionFixtureInstances.TryGetValue(partitionType, out var state))
-				continue;
+			var state = CreatePartitionStateInstance(partitionType);
+			if (state == null)
+			{
+				var testClass = partitioning.Value.Select(g => g.Collection.DisplayName).FirstOrDefault();
+				throw new Exception($"{typeof(TState)} did not yield partition state for e.g: {testClass}");
+			}
 
 			var partitionName = state.GetType().Name;
 			if (PartitionRegex != null && !PartitionRegex.IsMatch(partitionName))
+			{
+				SkipAll(partitioning.Value, $"Unmatched: '{PartitionRegex}' for partition: '{partitionName}'");
 				continue;
+			}
 
 			var skipReasons = partitioning.Value.SelectMany(g => g.TestCases.Select(t => t.SkipReason)).ToList();
 			var allSkipped = skipReasons.All(r => !string.IsNullOrWhiteSpace(r));
@@ -186,11 +207,11 @@ public abstract class PartitionTestAssemblyRunner<TState> : XunitTestAssemblyRun
 
 			ClusterTotals.Add(partitionName, Stopwatch.StartNew());
 
-			await UseStateAndRun(state, messageBus, async (concurrency) =>
+			await UseStateAndRun(state, async (concurrency) =>
 			{
 				await RunPartitionGroupConcurrently(partitioning.Value, concurrency, messageBus, ctx)
 					.ConfigureAwait(false);
-			}).ConfigureAwait(false);
+			}, async (e, f) => await FailAll(partitioning.Value, e, f, ctx)).ConfigureAwait(false);
 
 			ClusterTotals[partitionName].Stop();
 		}
@@ -221,7 +242,10 @@ public abstract class PartitionTestAssemblyRunner<TState> : XunitTestAssemblyRun
 		var test = g.Collection.DisplayName.Replace("Test collection for", string.Empty).Trim();
 
 		if (TestRegex != null && !TestRegex.IsMatch(test))
+		{
+			SkipAllXunit(g.TestCases.ToList(), $"Unmatched: '{TestRegex}', test class: '{test}'" );
 			return;
+		}
 
 		try
 		{
@@ -238,6 +262,68 @@ public abstract class PartitionTestAssemblyRunner<TState> : XunitTestAssemblyRun
 			// TODO: What should happen here?
 		}
 	}
+
+	private void SkipAll(IEnumerable<PartitionTests> source, string skipText)
+	{
+		var testCases = source.SelectMany(t => t.TestCases).ToList();
+		SkipAllXunit(testCases, skipText);
+	}
+
+	private void SkipAllXunit(List<IXunitTestCase> testCases, string skipText)
+	{
+		foreach (var t in testCases)
+		{
+			var test = new NoopTest(t);
+			ExecutionMessageSink.OnMessage(
+				new TestSkipped(test, skipText)
+				{
+					TestAssembly = t.TestMethod.TestClass.TestCollection.TestAssembly,
+					TestClass = t.TestMethod.TestClass
+				});
+
+			ExecutionMessageSink.OnMessage(
+				new TestFinished(test, 2, "Finished")
+				{
+					TestAssembly = t.TestMethod.TestClass.TestCollection.TestAssembly,
+					TestClass = t.TestMethod.TestClass
+				});
+		}
+
+		Summaries.Add(new RunSummary { Skipped = testCases.Count });
+	}
+
+	private async Task FailAll(IEnumerable<PartitionTests> source, Exception e, string failureText, CancellationTokenSource ctx)
+	{
+		var testCases = source.SelectMany(t => t.TestCases).ToList();
+		foreach (var t in testCases)
+		{
+			var test = new NoopTest(t);
+
+			ExecutionMessageSink.OnMessage(
+				new TestOutput(test, failureText)
+				{
+					TestAssembly = t.TestMethod.TestClass.TestCollection.TestAssembly,
+					TestClass = t.TestMethod.TestClass
+				});
+			ExecutionMessageSink.OnMessage(
+				new TestFailed(test, 2, e.Message, e)
+				{
+					TestAssembly = t.TestMethod.TestClass.TestCollection.TestAssembly,
+					TestClass = t.TestMethod.TestClass
+				});
+
+			ExecutionMessageSink.OnMessage(
+				new TestFinished(test, 2, "")
+				{
+					TestAssembly = t.TestMethod.TestClass.TestCollection.TestAssembly,
+					TestClass = t.TestMethod.TestClass
+				});
+		}
+		Summaries.Add(new RunSummary { Failed = testCases.Count });
+		await Task.CompletedTask;
+
+	}
+
 
 	private TState? CreatePartitionStateInstance(Type partitionType)
 	{
