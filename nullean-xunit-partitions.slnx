@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/build/">
+    <File Path=".editorconfig" />
+    <File Path=".github/workflows/ci.yml" />
+    <File Path=".gitignore" />
+    <File Path="build.bat" />
+    <File Path="build.sh" />
+    <File Path="Directory.Build.props" />
+    <File Path="dotnet-tools.json" />
+    <File Path="global.json" />
+    <File Path="readme.md" />
+    <Project Path="build/scripts/scripts.fsproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Nullean.Xunit.Partitions/Nullean.Xunit.Partitions.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <File Path="tests/Directory.Build.props" />
+    <Project Path="tests/Nullean.Xunit.Partitions.Tests/Nullean.Xunit.Partitions.Tests.csproj" />
+  </Folder>
+</Solution>
