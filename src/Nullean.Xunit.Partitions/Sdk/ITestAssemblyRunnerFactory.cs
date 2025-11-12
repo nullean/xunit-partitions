@@ -6,7 +6,7 @@ namespace Nullean.Xunit.Partitions.Sdk;
 
 public interface ITestAssemblyRunnerFactory
 {
-	public XunitTestAssemblyRunner Create(
+	XunitTestAssemblyRunner Create(
 		ITestAssembly testAssembly,
 		IEnumerable<IXunitTestCase> testCases,
 		IMessageSink diagnosticMessageSink,
