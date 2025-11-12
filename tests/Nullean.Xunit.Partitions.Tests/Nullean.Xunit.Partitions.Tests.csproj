@@ -1,14 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net10.0;net462</TargetFrameworks>
+    <TargetFramework Condition="'$(TargetOS)' != 'windows'">net10.0</TargetFramework>
+    <TargetFrameworks Condition="'$(TargetOS)' == 'windows'">net10.0;net462</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <PackageId>Nullean.Xunit.Partitions.Tests</PackageId>
+    <NoWarn>$(NoWarn);xUnit1041</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Nullean.Xunit.Partitions\Nullean.Xunit.Partitions.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="4.19.3" />
+    <PackageReference Include="FluentAssertions" Version="7.2.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
       <PrivateAssets>all</PrivateAssets>
