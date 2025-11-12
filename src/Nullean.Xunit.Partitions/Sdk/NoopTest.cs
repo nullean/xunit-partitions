@@ -1,6 +1,5 @@
 using System;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Nullean.Xunit.Partitions.Sdk;
 
