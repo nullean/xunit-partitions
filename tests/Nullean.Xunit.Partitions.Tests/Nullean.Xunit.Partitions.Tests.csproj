@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework Condition="'$(TargetOS)' != 'windows'">net10.0</TargetFramework>
-    <TargetFrameworks Condition="'$(TargetOS)' == 'windows'">net10.0;net462</TargetFrameworks>
+    <TargetFramework Condition="!$([MSBuild]::IsOsPlatform('Windows'))">net10.0</TargetFramework>
+    <TargetFrameworks Condition="$([MSBuild]::IsOsPlatform('Windows'))">net10.0;net462</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <PackageId>Nullean.Xunit.Partitions.Tests</PackageId>
     <NoWarn>$(NoWarn);xUnit1041</NoWarn>
