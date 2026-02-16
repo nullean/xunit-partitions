@@ -100,11 +100,16 @@ public abstract class PartitionTestAssemblyRunner<TState> : XunitTestAssemblyRun
 
 		var testCollections = OrderTestCollections();
 
+		// Use GroupBy on class name instead of .Distinct() on ITypeInfo, because ITypeInfo
+		// (ReflectionTypeInfo) does not override Equals/GetHashCode. When test cases are
+		// deserialized (e.g. VSTest adapter calling RunTests), each case gets its own ITypeInfo
+		// instance, making reference-equality-based Distinct() produce duplicates.
 		var cases =
 			from testCollection in testCollections
 			from classes in testCollection.Item2
 				.Select(collection => collection.TestMethod.TestClass.Class)
-				.Distinct()
+				.GroupBy(c => c.Name)
+				.Select(g => g.First())
 			let partition = GetPartitionFixtureType(classes)
 			let testcase = new PartitionTests
 			{
@@ -112,7 +117,7 @@ public abstract class PartitionTestAssemblyRunner<TState> : XunitTestAssemblyRun
 			}
 			select testcase;
 
-		Partitions = cases
+		Partitions = cases.ToList()
 			.GroupBy(c => c.FixtureLifetimeType)
 			.OrderBy(g => g.Count())
 			.ToDictionary(k => new NullableKeyType { Type = k.Key }, v => v.Select(g => g));
