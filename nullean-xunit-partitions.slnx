@@ -13,9 +13,11 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Nullean.Xunit.Partitions/Nullean.Xunit.Partitions.csproj" />
+    <Project Path="src/Nullean.Xunit.Partitions.v3/Nullean.Xunit.Partitions.v3.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <File Path="tests/Directory.Build.props" />
     <Project Path="tests/Nullean.Xunit.Partitions.Tests/Nullean.Xunit.Partitions.Tests.csproj" />
+    <Project Path="tests/Nullean.Xunit.Partitions.v3.Tests/Nullean.Xunit.Partitions.v3.Tests.csproj" />
   </Folder>
 </Solution>

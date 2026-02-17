@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <ImplicitUsings>false</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <IsTestProject>false</IsTestProject>
+
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\build\keys\keypair.snk</AssemblyOriginatorKeyFile>
+
+    <PackageIcon>nuget-icon.png</PackageIcon>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/nullean/xunit-partitions</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/nullean/xunit-partitions</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/nullean/xunit-partitions/releases</PackageReleaseNotes>
+
+    <PackageId>Nullean.Xunit.Partitions.v3</PackageId>
+    <Title>Nullean.Xunit.Partitions.v3 - xUnit v3 test runner for tests that need to share state</Title>
+    <Description>xUnit v3 partitions for when you need to share long running state between tests</Description>
+
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="README.md" />
+    <Content Include="..\..\nuget-icon.png" Pack="true" PackagePath="nuget-icon.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3.extensibility.core" Version="3.2.2" />
+    <PackageReference Update="MinVer" Version="6.0.0" />
+  </ItemGroup>
+
+</Project>
