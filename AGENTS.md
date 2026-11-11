@@ -13,7 +13,7 @@ tests, only one partition runs at a time, tests inside a partition still run con
 | `src/*/skills` | the agent skill packed into each package (`skills/<name>/SKILL.md`) |
 | `tests/Nullean.Xunit.Partitions.Tests` | v2 tests, on net10.0 (plus net462 on Windows) |
 | `tests/Nullean.Xunit.Partitions.v3.Tests` | v3 tests, an xUnit v3 executable on net10.0 |
-| `build/scripts` | the F# build the `mise` tasks call |
+| `build/scripts` | the F# build ([Nullean.Make.Fs](https://www.nuget.org/packages/Nullean.Make.Fs), net11.0) the `mise` tasks call |
 | `build/keys` | the strong-name key pair |
 
 ## Commands
