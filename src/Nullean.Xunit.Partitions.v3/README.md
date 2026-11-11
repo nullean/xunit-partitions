@@ -1,32 +1,28 @@
 # Nullean.Xunit.Partitions.v3
 
-<a href="https://www.nuget.org/packages/Nullean.Xunit.Partitions.v3/"><img src="https://img.shields.io/nuget/v/Nullean.Xunit.Partitions.v3?color=blue&style=plastic" /></a>
+![nullean](https://raw.githubusercontent.com/nullean/nullean.github.io/main/assets/nullean-lockup-light-544x192.png)
 
-An xUnit v3 `TestFramework` implementation that introduces the concept of **partitions** for sharing long-lived state across tests.
+Partitions for **xUnit v3**: share a few expensive, long-lived objects across thousands of tests, set up just before the tests that need them and torn down right after, one partition at a time. For xUnit v2, use [Nullean.Xunit.Partitions](https://www.nuget.org/packages/Nullean.Xunit.Partitions).
 
-> This is the **xUnit v3** version. For xUnit v2, use [`Nullean.Xunit.Partitions`](https://www.nuget.org/packages/Nullean.Xunit.Partitions/).
+[![NuGet](https://img.shields.io/nuget/v/Nullean.Xunit.Partitions.v3?style=flat-square)](https://www.nuget.org/packages/Nullean.Xunit.Partitions.v3)
 
-## Why partitions?
+## Install
 
-`IPartitionFixture<TLifetime>` lets tests inject a long-lived object (Docker container, database, Playwright browser, etc.) that is shared across multiple test classes.
+```sh
+dotnet add package Nullean.Xunit.Partitions.v3
+```
 
-- **Only one partition runs at a time** &mdash; partitions execute serially, so expensive resources don't compete.
-- **Tests within a partition run concurrently** &mdash; unlike `ICollectionFixture<T>`, partitions are not a concurrency barrier.
-- **Just-in-time lifecycle** &mdash; `InitializeAsync` is called right before a partition's tests run, and `DisposeAsync` right after. This is more efficient than assembly fixtures which bootstrap at startup and dispose at shutdown.
-- **Per-partition concurrency control** &mdash; each `IPartitionLifetime` can declare its own `MaxConcurrency`.
+## Quick start
 
-If you want to share a few (0&ndash;20) long-running objects over thousands of tests, this library is for you.
-If you have many test collections with only a few tests each, xUnit's native collection fixtures may be a better fit.
-
-## Setup
-
-xUnit v3 test projects are executables. Your `.csproj` should look like:
+xUnit v3 test projects are executables:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
+    <!-- xUnit's analyzer does not know partition fixtures feed constructors -->
+    <NoWarn>$(NoWarn);xUnit1041</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="xunit.v3" Version="3.2.2" />
@@ -44,86 +40,83 @@ using Xunit;
 [assembly: TestFramework(typeof(PartitionTestFramework))]
 ```
 
-## Usage
-
-Define a partition lifetime &mdash; the shared state that will be initialized once and injected into all test classes that request it:
+Give the shared state an `IPartitionLifetime`, and let test classes ask for it with `IPartitionFixture<T>`:
 
 ```csharp
-public class LongLivedObject : IPartitionLifetime
+using AwesomeAssertions;
+using Nullean.Xunit.Partitions.v3.Sdk;
+using Xunit;
+
+// The shared state: initialised just before its partition's tests run, disposed right after.
+public class Database : IPartitionLifetime
 {
-    private static long _initialized;
-    private static long _disposed;
+	private static int _starts;
+	public int Starts => _starts;
 
-    public long Initialized => _initialized;
-    public long Disposed => _disposed;
+	public ValueTask InitializeAsync()
+	{
+		Interlocked.Increment(ref _starts);   // start a container, a server, a browser...
+		return default;
+	}
 
-    public ValueTask InitializeAsync()
-    {
-        Interlocked.Increment(ref _initialized);
-        return default;
-    }
+	public ValueTask DisposeAsync() => default;
 
-    public ValueTask DisposeAsync()
-    {
-        Interlocked.Increment(ref _disposed);
-        return default;
-    }
+	public int? MaxConcurrency => null;        // test classes run at once; null for the default
+	public string FailureTestOutput() => "";   // reported on every test of the partition if InitializeAsync throws
+}
 
-    public int? MaxConcurrency => null;
-    public string FailureTestOutput() => "";
+public class OrderTests(Database db) : IPartitionFixture<Database>
+{
+	[Fact]
+	public void StartedOnce() => db.Starts.Should().Be(1);
+}
+
+public class CustomerTests(Database db) : IPartitionFixture<Database>
+{
+	[Fact]
+	public void SharesTheInstance() => db.Starts.Should().Be(1);
 }
 ```
 
-Test classes receive the shared instance via constructor injection by implementing `IPartitionFixture<T>`:
+`OrderTests` and `CustomerTests` receive one shared `Database`, after its `InitializeAsync` has run.
 
-```csharp
-public class SharedState1Class(LongLivedObject state) : IPartitionFixture<LongLivedObject>
-{
-    [Fact]
-    public void InitializedOnce() => state.Initialized.Should().Be(1);
+## How it runs
 
-    [Fact]
-    public void NotDisposedYet() => state.Disposed.Should().Be(0);
-}
+- **One partition at a time.** No partition runs concurrently with another, by design, so each partition's state
+  can run expensive operations (start Docker containers or processes, bootstrap Playwright) in isolation.
+- **Concurrent inside a partition.** Unlike xUnit's `ICollectionFixture<T>`, a partition is not a concurrency barrier:
+  the test classes that share a partition run concurrently.
+- **Just in time.** `InitializeAsync` runs right before a partition's tests and `DisposeAsync` right after, before the
+  next partition initialises. Assembly fixtures bootstrap too early and dispose too late.
+- **No partition is a partition too.** Test classes without `IPartitionFixture<T>` run together, concurrently, as one
+  more partition.
+- If `InitializeAsync` throws, every test of the partition fails with the exception and the text of
+  `FailureTestOutput()`, such as a server's log.
+- `MaxConcurrency` is how many of the partition's test classes run at once. The runner uses the larger of it and its
+  default, 4 x the processor count, so only a higher value changes anything; `null` keeps the default.
 
-public class SharedState2Class(LongLivedObject state) : IPartitionFixture<LongLivedObject>
-{
-    [Fact]
-    public void InitializedOnce() => state.Initialized.Should().Be(1);
-
-    [Fact]
-    public void NotDisposedYet() => state.Disposed.Should().Be(0);
-}
-```
-
-Both classes share a single `LongLivedObject` instance. Their tests run concurrently within the partition. `DisposeAsync` runs only after all tests in the partition complete.
-
-Test classes without `IPartitionFixture<T>` are grouped into an implicit "no partition" group and run concurrently with default concurrency.
+If you want to share a few (say 0 to 20) long-running objects over thousands of tests, this library will work for
+you. If you instead have many test collections each with only a few tests, xUnit's own collections suit better.
 
 ## Providing options
 
-Control partition and test filtering with a custom options class:
+Filter which partitions and test classes run with an options class; filtered-out tests are reported as skipped.
+`OnBeforeTestsRun()` and `OnTestsFinished(...)` can be overridden for logging or reporting.
 
 ```csharp
 using Nullean.Xunit.Partitions.v3;
-using Xunit;
 
-[assembly: TestFramework(typeof(PartitionTestFramework))]
-[assembly: PartitionOptions(typeof(MyOptions))]
+[assembly: PartitionOptions(typeof(MyPartitioningOptions))]
 
-public class MyOptions : PartitionOptions
+public class MyPartitioningOptions : PartitionOptions
 {
-    public MyOptions()
-    {
-        // Only run partitions whose type name matches this regex
-        PartitionFilterRegex = "LongLivedObject";
-        // Only run test classes whose name matches this regex (null = all)
-        TestFilterRegex = null;
-    }
+	public MyPartitioningOptions()
+	{
+		PartitionFilterRegex = "Database";   // only run partitions whose lifetime type name matches
+		TestFilterRegex = null;              // only run test classes whose name matches (null = all)
+	}
 }
 ```
-
-You can also override `OnBeforeTestsRun()` and `OnTestsFinished(...)` for custom logging or reporting.
 
 ## Migrating from v2
 
@@ -135,8 +128,8 @@ You can also override `OnBeforeTestsRun()` and `OnTestsFinished(...)` for custom
 | `return Task.CompletedTask;` | `return default;` |
 | `Nullean.Xunit.Partitions` namespace | `Nullean.Xunit.Partitions.v3` namespace |
 | Test project is a class library | Test project is an executable (`<OutputType>Exe</OutputType>`) |
-| Requires `xunit.runner.visualstudio` + `Microsoft.NET.Test.Sdk` | Self-hosting &mdash; no runner packages needed |
+| Requires `xunit.runner.visualstudio` + `Microsoft.NET.Test.Sdk` | Self-hosting - no runner packages needed |
 
-## License
+## Learn more
 
-MIT
+- Source and issues: https://github.com/nullean/xunit-partitions
