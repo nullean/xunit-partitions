@@ -1,0 +1,33 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <!-- the libraries -->
+  <ItemGroup>
+    <PackageVersion Include="MinVer" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.0.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.2" />
+  </ItemGroup>
+
+  <!-- tests -->
+  <ItemGroup>
+    <PackageVersion Include="FluentAssertions" Version="7.2.0" />
+    <PackageVersion Include="GitHubActionsTestLogger" Version="2.3.3" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageVersion Include="Nullean.VsTest.Pretty.TestLogger" Version="0.4.0" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+  </ItemGroup>
+
+  <!-- build/scripts -->
+  <ItemGroup>
+    <PackageVersion Include="Argu" Version="6.0.0" />
+    <PackageVersion Include="Bullseye" Version="6.0.0" />
+    <PackageVersion Include="Fake.Tools.Git" Version="5.15.0" />
+    <!-- the version the SDK added implicitly before CPM -->
+    <PackageVersion Include="FSharp.Core" Version="11.0.101" />
+    <PackageVersion Include="Proc" Version="0.9.1" />
+  </ItemGroup>
+</Project>
