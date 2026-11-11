@@ -10,7 +10,7 @@
     <ProjectReference Include="..\..\src\Nullean.Xunit.Partitions\Nullean.Xunit.Partitions.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
