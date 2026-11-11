@@ -10,8 +10,7 @@ using Xunit.Sdk;
 
 namespace Nullean.Xunit.Partitions.Sdk;
 
-public class PartitionTestFrameworkDiscoverer<TOptions> : XunitTestFrameworkDiscoverer
-	where TOptions : PartitionOptions, new()
+public class PartitionTestFrameworkDiscoverer<TOptions> : XunitTestFrameworkDiscoverer where TOptions : PartitionOptions, new()
 {
 	private readonly Type _fixtureOpenGeneric;
 
@@ -20,9 +19,8 @@ public class PartitionTestFrameworkDiscoverer<TOptions> : XunitTestFrameworkDisc
 		ISourceInformationProvider sourceProvider,
 		IMessageSink diagnosticMessageSink,
 		Type fixtureOpenGeneric
-		) : base(assemblyInfo, sourceProvider, diagnosticMessageSink)
+	) : base(assemblyInfo, sourceProvider, diagnosticMessageSink)
 	{
-
 		_fixtureOpenGeneric = fixtureOpenGeneric;
 		var a = Assembly.Load(new AssemblyName(assemblyInfo.Name));
 		Options = PartitionOptionsAttribute.GetOptions<TOptions>(a);
@@ -33,8 +31,12 @@ public class PartitionTestFrameworkDiscoverer<TOptions> : XunitTestFrameworkDisc
 
 	private TOptions Options { get; }
 
-	protected override bool FindTestsForType(ITestClass testClass, bool includeSourceInformation,
-		IMessageBus messageBus, ITestFrameworkDiscoveryOptions discoveryOptions)
+	protected override bool FindTestsForType(
+		ITestClass testClass,
+		bool includeSourceInformation,
+		IMessageBus messageBus,
+		ITestFrameworkDiscoveryOptions discoveryOptions
+	)
 	{
 		Options.SetOptions(discoveryOptions);
 		return base.FindTestsForType(testClass, includeSourceInformation, messageBus, discoveryOptions);

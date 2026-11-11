@@ -20,15 +20,11 @@ internal class TestCollectionRunner(
 	ITestCaseOrderer testCaseOrderer,
 	ExceptionAggregator aggregator,
 	CancellationTokenSource ctx
-)
-	: XunitTestCollectionRunner(
-		testCollection, testCases, diagnosticMessageSink, messageBus, testCaseOrderer, aggregator, ctx
-	)
+) : XunitTestCollectionRunner(testCollection, testCases, diagnosticMessageSink, messageBus, testCaseOrderer, aggregator, ctx)
 {
 	private readonly IMessageSink _diagnosticMessageSink = diagnosticMessageSink;
 
-	protected override Task<RunSummary> RunTestClassAsync(ITestClass testClass, IReflectionTypeInfo @class,
-		IEnumerable<IXunitTestCase> testCases)
+	protected override Task<RunSummary> RunTestClassAsync(ITestClass testClass, IReflectionTypeInfo @class, IEnumerable<IXunitTestCase> testCases)
 	{
 		// this ensures xunit can constructor inject our partition types
 		var combinedFixtures = new Dictionary<Type, object>(assemblyFixtureMappings);
@@ -36,9 +32,17 @@ internal class TestCollectionRunner(
 			combinedFixtures[kvp.Key] = kvp.Value;
 
 		// We've done everything we need, so hand back off to default Xunit implementation for class runner
-		return new PartitionTestClassRunner(testClass, @class, testCases, _diagnosticMessageSink, MessageBus,
-				TestCaseOrderer, new ExceptionAggregator(Aggregator), CancellationTokenSource, combinedFixtures)
-			.RunAsync();
+		return new PartitionTestClassRunner(
+			testClass,
+			@class,
+			testCases,
+			_diagnosticMessageSink,
+			MessageBus,
+			TestCaseOrderer,
+			new ExceptionAggregator(Aggregator),
+			CancellationTokenSource,
+			combinedFixtures
+		).RunAsync();
 	}
 }
 
@@ -51,13 +55,25 @@ internal class PartitionTestClassRunner(
 	ITestCaseOrderer testCaseOrderer,
 	ExceptionAggregator aggregator,
 	CancellationTokenSource cancellationTokenSource,
-	IDictionary<Type, object> collectionFixtureMappings)
-	: XunitTestClassRunner(testClass, @class, testCases, diagnosticMessageSink, messageBus, testCaseOrderer, aggregator,
-		cancellationTokenSource, collectionFixtureMappings)
+	IDictionary<Type, object> collectionFixtureMappings
+) : XunitTestClassRunner(
+	testClass,
+	@class,
+	testCases,
+	diagnosticMessageSink,
+	messageBus,
+	testCaseOrderer,
+	aggregator,
+	cancellationTokenSource,
+	collectionFixtureMappings
+)
 {
-	protected override async Task<RunSummary> RunTestMethodAsync(ITestMethod testMethod, IReflectionMethodInfo method,
+	protected override async Task<RunSummary> RunTestMethodAsync(
+		ITestMethod testMethod,
+		IReflectionMethodInfo method,
 		IEnumerable<IXunitTestCase> testCases,
-		object[] constructorArguments)
+		object[] constructorArguments
+	)
 	{
 		PartitionContext.StartExceptionCapture();
 		var result = await base.RunTestMethodAsync(testMethod, method, testCases, constructorArguments);

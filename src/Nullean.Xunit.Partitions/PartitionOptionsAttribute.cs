@@ -27,18 +27,13 @@ public class PartitionOptionsAttribute : Attribute
 
 	private TOptions GetOptions<TOptions>() where TOptions : PartitionOptions, new()
 	{
-		 var options = Activator.CreateInstance(_type) as TOptions;
-		 return options ?? new TOptions();
+		var options = Activator.CreateInstance(_type) as TOptions;
+		return options ?? new TOptions();
 	}
 
 	public static TOptions GetOptions<TOptions>(Assembly assembly) where TOptions : PartitionOptions, new()
 	{
-		var options = assembly
-			.GetCustomAttributes()
-			.OfType<PartitionOptionsAttribute?>()
-			.FirstOrDefault()
-			?.GetOptions<TOptions>()
-			?? new TOptions();
+		var options = assembly.GetCustomAttributes().OfType<PartitionOptionsAttribute?>().FirstOrDefault()?.GetOptions<TOptions>() ?? new TOptions();
 
 		return options;
 	}

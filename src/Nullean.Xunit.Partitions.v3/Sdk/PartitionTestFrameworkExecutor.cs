@@ -12,12 +12,9 @@ using Xunit.v3;
 
 namespace Nullean.Xunit.Partitions.v3.Sdk;
 
-internal class PartitionTestFrameworkExecutor<TOptions>(
-	TOptions options,
-	IXunitTestAssembly testAssembly
-)
-	: XunitTestFrameworkExecutor(testAssembly)
-	where TOptions : PartitionOptions, new()
+internal class PartitionTestFrameworkExecutor<TOptions>(TOptions options, IXunitTestAssembly testAssembly) : XunitTestFrameworkExecutor(
+	testAssembly
+) where TOptions : PartitionOptions, new()
 {
 	private TOptions Options { get; } = options;
 
@@ -25,7 +22,8 @@ internal class PartitionTestFrameworkExecutor<TOptions>(
 		IReadOnlyCollection<IXunitTestCase> testCases,
 		IMessageSink executionMessageSink,
 		ITestFrameworkExecutionOptions executionOptions,
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken
+	)
 	{
 		Options.SetOptions(executionOptions);
 		try
@@ -39,13 +37,7 @@ internal class PartitionTestFrameworkExecutor<TOptions>(
 			if (!string.IsNullOrEmpty(Options.TestFilterRegex))
 				runner.TestRegex = new Regex(Options.TestFilterRegex);
 
-			await runner.Run(
-				TestAssembly,
-				testCases,
-				executionMessageSink,
-				executionOptions,
-				cancellationToken
-			).ConfigureAwait(false);
+			await runner.Run(TestAssembly, testCases, executionMessageSink, executionOptions, cancellationToken).ConfigureAwait(false);
 			Options.OnTestsFinished(runner.ClusterTotals, runner.FailedCollections);
 		}
 		catch (Exception e)

@@ -17,10 +17,11 @@ public interface ITestAssemblyRunnerFactory
 
 public class PartitionTestRunnerFactory : ITestAssemblyRunnerFactory
 {
-	public XunitTestAssemblyRunner Create(ITestAssembly testAssembly, IEnumerable<IXunitTestCase> testCases,
+	public XunitTestAssemblyRunner Create(
+		ITestAssembly testAssembly,
+		IEnumerable<IXunitTestCase> testCases,
 		IMessageSink diagnosticMessageSink,
-		IMessageSink executionMessageSink, ITestFrameworkExecutionOptions executionOptions) =>
-		new PartitionTestAssemblyRunner(testAssembly, testCases, diagnosticMessageSink, executionMessageSink,
-			executionOptions);
+		IMessageSink executionMessageSink,
+		ITestFrameworkExecutionOptions executionOptions
+	) => new PartitionTestAssemblyRunner(testAssembly, testCases, diagnosticMessageSink, executionMessageSink, executionOptions);
 }
-

@@ -40,7 +40,8 @@ public static class PartitionContext
 
 	internal static void StopExceptionCapture()
 	{
-		if (Local.Value != null) Local.Value.RanTest = true;
+		if (Local.Value != null)
+			Local.Value.RanTest = true;
 	}
 
 	internal static void StartExceptionCapture()
@@ -71,8 +72,10 @@ public static class PartitionContext
 			var e = Local.Value?.Exception;
 			switch (e)
 			{
-				case null: return null;
-				case XunitException: return e;
+				case null:
+					return null;
+				case XunitException:
+					return e;
 			}
 
 			var outerTrace = new StackTrace(e, false);
@@ -81,13 +84,13 @@ public static class PartitionContext
 
 			// firstMethod.DeclaringType can be null if the member was generated with reflection.
 			var root = firstMethod.DeclaringType?.DeclaringType;
-			if (root == null || root != typeof(ExceptionAggregator)) return null;
+			if (root == null || root != typeof(ExceptionAggregator))
+				return null;
 
 			if (e is TargetInvocationException targetInvocationException)
 				return targetInvocationException.InnerException;
 
 			return e;
-
 		}
 	}
 }

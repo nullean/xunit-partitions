@@ -22,8 +22,7 @@ namespace Nullean.Xunit.Partitions.v3;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class PartitionTestFramework : PartitionTestFramework<PartitionOptions>;
 
-public class PartitionTestFramework<TOptions> : XunitTestFramework
-	where TOptions : PartitionOptions, new()
+public class PartitionTestFramework<TOptions> : XunitTestFramework where TOptions : PartitionOptions, new()
 {
 	protected override ITestFrameworkExecutor CreateExecutor(Assembly assembly)
 	{

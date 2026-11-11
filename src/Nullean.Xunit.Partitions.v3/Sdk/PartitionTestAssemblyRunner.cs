@@ -44,35 +44,20 @@ public class PartitionTestAssemblyRunner : XunitTestAssemblyRunner
 
 	private Dictionary<NullableKeyType, IEnumerable<PartitionTests>>? _partitions;
 
-	private Dictionary<NullableKeyType, IEnumerable<PartitionTests>> BuildPartitions(
-		XunitTestAssemblyRunnerContext ctxt)
+	private Dictionary<NullableKeyType, IEnumerable<PartitionTests>> BuildPartitions(XunitTestAssemblyRunnerContext ctxt)
 	{
 		var orderedCollections = OrderTestCollections(ctxt);
 
-		var cases =
-			from testCollection in orderedCollections
-			let classes = testCollection.Item2
-				.Select(tc => tc.TestClass?.Class)
-				.Where(t => t != null)
-				.Distinct()
-			let partition = classes.Select(c => GetPartitionFixtureType(c!)).FirstOrDefault(p => p != null)
-			let testcase = new PartitionTests
-			{
-				Collection = testCollection.Item1,
-				TestCases = testCollection.Item2,
-				FixtureLifetimeType = partition
-			}
-			select testcase;
+		var cases = from testCollection in orderedCollections
+					let classes = testCollection.Item2.Select(tc => tc.TestClass?.Class).Where(t => t != null).Distinct()
+					let partition = classes.Select(c => GetPartitionFixtureType(c!)).FirstOrDefault(p => p != null)
+					let testcase = new PartitionTests { Collection = testCollection.Item1, TestCases = testCollection.Item2, FixtureLifetimeType = partition }
+					select testcase;
 
-		return cases
-			.GroupBy(c => c.FixtureLifetimeType)
-			.OrderBy(g => g.Count())
-			.ToDictionary(k => new NullableKeyType { Type = k.Key }, v => v.Select(g => g));
+		return cases.GroupBy(c => c.FixtureLifetimeType).OrderBy(g => g.Count()).ToDictionary(k => new NullableKeyType { Type = k.Key }, v => v.Select(g => g));
 	}
 
-	protected override async ValueTask<RunSummary> RunTestCollections(
-		XunitTestAssemblyRunnerContext ctxt,
-		Exception? exception)
+	protected override async ValueTask<RunSummary> RunTestCollections(XunitTestAssemblyRunnerContext ctxt, Exception? exception)
 	{
 		_partitions = BuildPartitions(ctxt);
 
@@ -84,7 +69,8 @@ public class PartitionTestAssemblyRunner : XunitTestAssemblyRunner
 				continue;
 
 			var state = CreatePartitionStateInstance(partitionType, ctxt);
-			if (state == null) continue;
+			if (state == null)
+				continue;
 
 			_partitionFixtureInstances[partitionType] = state;
 		}
@@ -135,8 +121,7 @@ public class PartitionTestAssemblyRunner : XunitTestAssemblyRunner
 			var partitionSummary = new RunSummary();
 			await UseStateAndRun(state, ctxt, async concurrency =>
 			{
-				var s = await RunPartitionGroupConcurrently(partitioning.Value, concurrency, ctxt)
-					.ConfigureAwait(false);
+				var s = await RunPartitionGroupConcurrently(partitioning.Value, concurrency, ctxt).ConfigureAwait(false);
 				partitionSummary.Aggregate(s);
 			}, async (e, f) =>
 			{
@@ -165,7 +150,8 @@ public class PartitionTestAssemblyRunner : XunitTestAssemblyRunner
 		IPartitionLifetime partition,
 		XunitTestAssemblyRunnerContext ctxt,
 		Func<int?, Task> runGroup,
-		Func<Exception, string, Task> failAll)
+		Func<Exception, string, Task> failAll
+	)
 	{
 		var initialized = false;
 		try
@@ -188,7 +174,8 @@ public class PartitionTestAssemblyRunner : XunitTestAssemblyRunner
 	protected override async ValueTask<RunSummary> RunTestCollection(
 		XunitTestAssemblyRunnerContext ctxt,
 		IXunitTestCollection testCollection,
-		IReadOnlyCollection<IXunitTestCase> testCases)
+		IReadOnlyCollection<IXunitTestCase> testCases
+	)
 	{
 		// Collect all fixture instances: assembly fixtures + partition fixtures
 		var allFixtures = new List<object>();
@@ -204,33 +191,30 @@ public class PartitionTestAssemblyRunner : XunitTestAssemblyRunner
 		// Create a combined fixture manager with all fixtures pre-populated
 		var combinedManager = new PartitionFixtureMappingManager(allFixtures.ToArray());
 
-		return await XunitTestCollectionRunner.Instance.Run(
-			testCollection,
-			testCases,
-			ctxt.ExplicitOption,
-			ctxt.MessageBus,
-			ctxt.AssemblyTestCaseOrderer ?? DefaultTestCaseOrderer.Instance,
-			ctxt.Aggregator,
-			ctxt.CancellationTokenSource,
-			combinedManager
-		).ConfigureAwait(false);
+		return await XunitTestCollectionRunner
+			.Instance
+			.Run(
+				testCollection,
+				testCases,
+				ctxt.ExplicitOption,
+				ctxt.MessageBus,
+				ctxt.AssemblyTestCaseOrderer ?? DefaultTestCaseOrderer.Instance,
+				ctxt.Aggregator,
+				ctxt.CancellationTokenSource,
+				combinedManager
+			)
+			.ConfigureAwait(false);
 	}
 
-	private async Task<RunSummary> RunPartitionGroupConcurrently(
-		IEnumerable<PartitionTests> source, int? concurrency, XunitTestAssemblyRunnerContext ctxt
-	)
+	private async Task<RunSummary> RunPartitionGroupConcurrently(IEnumerable<PartitionTests> source, int? concurrency, XunitTestAssemblyRunnerContext ctxt)
 	{
 		var summaries = new ConcurrentBag<RunSummary>();
 
-		await source
-			.ForEachAsync(Math.Max(concurrency ?? 0, DefaultConcurrency),
-				async g =>
-				{
-					var summary = await ExecutePartitionGrouping(ctxt, g).ConfigureAwait(false);
-					summaries.Add(summary);
-				}
-			)
-			.ConfigureAwait(false);
+		await source.ForEachAsync(Math.Max(concurrency ?? 0, DefaultConcurrency), async g =>
+		{
+			var summary = await ExecutePartitionGrouping(ctxt, g).ConfigureAwait(false);
+			summaries.Add(summary);
+		}).ConfigureAwait(false);
 
 		var result = new RunSummary();
 		foreach (var s in summaries)
@@ -238,10 +222,7 @@ public class PartitionTestAssemblyRunner : XunitTestAssemblyRunner
 		return result;
 	}
 
-	private async Task<RunSummary> ExecutePartitionGrouping(
-		XunitTestAssemblyRunnerContext ctxt,
-		PartitionTests g
-	)
+	private async Task<RunSummary> ExecutePartitionGrouping(XunitTestAssemblyRunnerContext ctxt, PartitionTests g)
 	{
 		var test = g.Collection.TestCollectionDisplayName.Replace("Test collection for", string.Empty).Trim();
 
@@ -249,7 +230,9 @@ public class PartitionTestAssemblyRunner : XunitTestAssemblyRunner
 		{
 			var cases = g.TestCases.Cast<ITestCase>().ToList();
 			XunitRunnerHelper.SkipTestCases(
-				ctxt.MessageBus, ctxt.CancellationTokenSource, cases,
+				ctxt.MessageBus,
+				ctxt.CancellationTokenSource,
+				cases,
 				$"Unmatched: '{TestRegex}', test class: '{test}'",
 				sendTestCollectionMessages: true,
 				sendTestClassMessages: true,
@@ -282,7 +265,10 @@ public class PartitionTestAssemblyRunner : XunitTestAssemblyRunner
 		var testCases = source.SelectMany(t => t.TestCases).Cast<ITestCase>().ToList();
 		// Send skip messages for console display
 		XunitRunnerHelper.SkipTestCases(
-			ctxt.MessageBus, ctxt.CancellationTokenSource, testCases, skipText,
+			ctxt.MessageBus,
+			ctxt.CancellationTokenSource,
+			testCases,
+			skipText,
 			sendTestCollectionMessages: true,
 			sendTestClassMessages: true,
 			sendTestMethodMessages: true,
@@ -294,15 +280,14 @@ public class PartitionTestAssemblyRunner : XunitTestAssemblyRunner
 		return new RunSummary { Total = testCases.Count, Skipped = testCases.Count };
 	}
 
-	private Task<RunSummary> FailAll(
-		XunitTestAssemblyRunnerContext ctxt,
-		IEnumerable<PartitionTests> source,
-		Exception e,
-		string failureText)
+	private Task<RunSummary> FailAll(XunitTestAssemblyRunnerContext ctxt, IEnumerable<PartitionTests> source, Exception e, string failureText)
 	{
 		var testCases = source.SelectMany(t => t.TestCases).Cast<ITestCase>().ToList();
 		var summary = XunitRunnerHelper.FailTestCases(
-			ctxt.MessageBus, ctxt.CancellationTokenSource, testCases, e,
+			ctxt.MessageBus,
+			ctxt.CancellationTokenSource,
+			testCases,
+			e,
 			sendTestCollectionMessages: false,
 			sendTestClassMessages: false,
 			sendTestMethodMessages: false,
@@ -314,7 +299,8 @@ public class PartitionTestAssemblyRunner : XunitTestAssemblyRunner
 
 	private IPartitionLifetime? CreatePartitionStateInstance(Type partitionType, XunitTestAssemblyRunnerContext ctxt)
 	{
-		if (_partitionFixtureInstances.TryGetValue(partitionType, out var partition)) return partition;
+		if (_partitionFixtureInstances.TryGetValue(partitionType, out var partition))
+			return partition;
 		ctxt.Aggregator.Run(() =>
 		{
 			var o = Activator.CreateInstance(partitionType);
@@ -326,7 +312,8 @@ public class PartitionTestAssemblyRunner : XunitTestAssemblyRunner
 	}
 
 	public static Type? GetPartitionFixtureType(Type testClass) =>
-		testClass.GetInterfaces()
+		testClass
+			.GetInterfaces()
 			.Where(i => i.IsGenericType)
 			.Where(t => t.GetGenericTypeDefinition() == typeof(IPartitionFixture<>))
 			.SelectMany(t => t.GetGenericArguments(), (_, a) => a)
