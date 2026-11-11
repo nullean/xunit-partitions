@@ -10,8 +10,7 @@
     <ProjectReference Include="..\..\src\Nullean.Xunit.Partitions.v3\Nullean.Xunit.Partitions.v3.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="7.2.0" />
-    <PackageReference Include="xunit.v3" Version="3.2.2" />
-    <PackageReference Update="MinVer" Version="6.0.0" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="xunit.v3" />
   </ItemGroup>
 </Project>

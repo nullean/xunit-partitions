@@ -11,33 +11,26 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\build\keys\keypair.snk</AssemblyOriginatorKeyFile>
 
-    <PackageIcon>nuget-icon.png</PackageIcon>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/nullean/xunit-partitions</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/nullean/xunit-partitions</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/nullean/xunit-partitions/releases</PackageReleaseNotes>
-
     <PackageId>Nullean.Xunit.Partitions</PackageId>
     <Title>Nullean.Xunit.Partitions - xUnit test runner for tests that need to share state</Title>
     <Description>xUnit partitions for when you need to share long running state between tests</Description>
-
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-
+    <PackageTags>xunit;testing;test-framework;fixtures;integration-tests;shared-state</PackageTags>
   </PropertyGroup>
 
+  <!-- the repository README is this package's README; Directory.Build.props only packs one next to the project -->
+  <PropertyGroup>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
   <ItemGroup>
-    <Content Include="..\..\README.md" Pack="true" PackagePath="README.md" CopyToOutputDirectory="PreserveNewest"/>
-    <Content Include="..\..\nuget-icon.png" Pack="true" PackagePath="nuget-icon.png" CopyToOutputDirectory="PreserveNewest" />
-
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Update="MinVer" Version="6.0.0" />
+    <PackageReference Include="xunit" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="18.0.1" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
   </ItemGroup>
 
 </Project>
