@@ -16,10 +16,7 @@ internal class PartitionTestFrameworkExecutor<TOptions, TRunnerFactory>(
 	AssemblyName a,
 	ISourceInformationProvider sip,
 	IMessageSink d
-)
-	: XunitTestFrameworkExecutor(a, sip, d)
-	where TOptions : PartitionOptions, new()
-	where TRunnerFactory : ITestAssemblyRunnerFactory, new()
+) : XunitTestFrameworkExecutor(a, sip, d) where TOptions : PartitionOptions, new() where TRunnerFactory : ITestAssemblyRunnerFactory, new()
 {
 	private ITestAssemblyRunnerFactory RunnerFactory { get; } = new TRunnerFactory();
 
@@ -37,19 +34,13 @@ internal class PartitionTestFrameworkExecutor<TOptions, TRunnerFactory>(
 		base.RunAll(executionMessageSink, discoveryOptions, executionOptions);
 	}
 
-	public override void RunTests(
-		IEnumerable<ITestCase> testCases,
-		IMessageSink executionMessageSink,
-		ITestFrameworkExecutionOptions executionOptions)
+	public override void RunTests(IEnumerable<ITestCase> testCases, IMessageSink executionMessageSink, ITestFrameworkExecutionOptions executionOptions)
 	{
 		Options.SetOptions(executionOptions);
 		base.RunTests(testCases, executionMessageSink, executionOptions);
 	}
 
-	protected override async void RunTestCases(
-		IEnumerable<IXunitTestCase> testCases,
-		IMessageSink sink,
-		ITestFrameworkExecutionOptions options)
+	protected override async void RunTestCases(IEnumerable<IXunitTestCase> testCases, IMessageSink sink, ITestFrameworkExecutionOptions options)
 	{
 		Options.SetOptions(options);
 		try

@@ -10,7 +10,6 @@ using Xunit.Sdk;
 
 namespace Nullean.Xunit.Partitions;
 
-
 public static class Partition
 {
 	public const string Assembly = $"{nameof(Nullean)}.{nameof(Xunit)}.{nameof(Partitions)}";
@@ -28,15 +27,13 @@ public static class Partition
 /// <see cref="IPartitionLifetime.MaxConcurrency"/> </para>
 /// </summary>
 // ReSharper disable once ClassNeverInstantiated.Global
-public class PartitionTestFramework(IMessageSink sink)
-	: PartitionTestFramework<PartitionOptions, PartitionTestRunnerFactory, TestFrameworkDiscovererFactory>
-		(sink);
+public class PartitionTestFramework(IMessageSink sink) : PartitionTestFramework<PartitionOptions, PartitionTestRunnerFactory, TestFrameworkDiscovererFactory>(
+	sink
+);
 
-public abstract class PartitionTestFramework<TOptions, TRunnerFactory, TDiscoverFactory>(IMessageSink sink)
-	: XunitTestFramework(sink)
-	where TOptions : PartitionOptions, new()
-	where TRunnerFactory : ITestAssemblyRunnerFactory, new()
-	where TDiscoverFactory : ITestFrameworkDiscovererFactory, new()
+public abstract class PartitionTestFramework<TOptions, TRunnerFactory, TDiscoverFactory>(IMessageSink sink) : XunitTestFramework(
+	sink
+) where TOptions : PartitionOptions, new() where TRunnerFactory : ITestAssemblyRunnerFactory, new() where TDiscoverFactory : ITestFrameworkDiscovererFactory, new()
 {
 	private TDiscoverFactory DiscoverFactory { get; } = new();
 
@@ -50,5 +47,4 @@ public abstract class PartitionTestFramework<TOptions, TRunnerFactory, TDiscover
 
 		return new PartitionTestFrameworkExecutor<TOptions, TRunnerFactory>(options, assemblyName, SourceInformationProvider, DiagnosticMessageSink);
 	}
-
 }

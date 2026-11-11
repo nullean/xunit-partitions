@@ -12,8 +12,6 @@ namespace Nullean.Xunit.Partitions.v3.Sdk;
 /// </summary>
 internal class PartitionFixtureMappingManager : FixtureMappingManager
 {
-	public PartitionFixtureMappingManager(object[] cachedFixtureValues)
-		: base("Partition", cachedFixtureValues)
-	{
-	}
+	public PartitionFixtureMappingManager(object[] cachedFixtureValues) : base("Partition", cachedFixtureValues)
+	{ }
 }
