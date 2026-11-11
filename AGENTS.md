@@ -53,3 +53,5 @@ exactly one release label. Package output and API reports go to `build/output`.
   Package metadata lives in `Directory.Build.props`; a project file keeps only id, title, description and tags.
 - The packed skills are written from the code, and every snippet in them must compile: update them with the public
   API, in both packages.
+- Build targets are Make.Fs `target { }` blocks in `build/scripts/Program.fs` whose commands are Proc.Fs `sh $"…"`
+  lines; values come from `text`/`lines` inside `shell { }`. Do not call the C# `ProcNet` API from the build.
