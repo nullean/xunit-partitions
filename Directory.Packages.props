@@ -5,20 +5,21 @@
 
   <!-- the libraries -->
   <ItemGroup>
-    <PackageVersion Include="MinVer" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.0.1" />
+    <PackageVersion Include="MinVer" Version="8.0.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
-    <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.2" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="4.0.3" />
   </ItemGroup>
 
   <!-- tests -->
   <ItemGroup>
     <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
-    <PackageVersion Include="GitHubActionsTestLogger" Version="2.3.3" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
-    <PackageVersion Include="Nullean.VsTest.Pretty.TestLogger" Version="0.4.0" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
-    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+    <PackageVersion Include="GitHubActionsTestLogger" Version="3.0.5" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.12.0" />
+    <PackageVersion Include="Nullean.VsTest.Pretty.TestLogger" Version="0.10.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" Condition="'$(TargetFramework)' != 'net462'" />
+    <!-- net462 (the Windows-only test TFM): 3.0 and later need net472; 2.8.2 is the last that supports net462 -->
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" Condition="'$(TargetFramework)' == 'net462'" />
+    <PackageVersion Include="xunit.v3" Version="4.0.3" />
   </ItemGroup>
 
   <!-- build/scripts -->
@@ -26,6 +27,6 @@
     <!-- the version the SDK added implicitly before CPM; Nullean.Make.Fs needs 11.0.100 or later -->
     <PackageVersion Include="FSharp.Core" Version="11.0.101" />
     <!-- brings Proc and Proc.Fs -->
-    <PackageVersion Include="Nullean.Make.Fs" Version="0.25.0" />
+    <PackageVersion Include="Nullean.Make.Fs" Version="0.27.2" />
   </ItemGroup>
 </Project>

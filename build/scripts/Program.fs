@@ -50,7 +50,10 @@ let main argv =
         | Build -> command {
               composes [Clean]
               executes (shell { sh $"dotnet build -c Release" }) }
-        | Test -> target [Build] { sh $"dotnet test -c RELEASE --logger:GithubActions --logger:pretty" }
+        // only the v2 project: xUnit v3 4.x makes the v3 project a Microsoft.Testing.Platform v2 application, which
+        // fails `dotnet test` in VSTest mode; it never had a VSTest adapter, so it was only ever built here
+        | Test -> target [Build] {
+              sh $"dotnet test tests/Nullean.Xunit.Partitions.Tests -c RELEASE --logger:GithubActions --logger:pretty" }
         | Pack -> command { requires [Build]; composes [GeneratePackages; ValidatePackages; GenerateApiChanges] }
         | Ci -> command { requires [Test]; composes [GeneratePackages; ValidatePackages; GenerateApiChanges] }
         | GeneratePackages -> target [] { sh $"dotnet pack -c Release -o {output}" }
@@ -61,9 +64,9 @@ let main argv =
               for package in packages () do
                   let package = Paths.RootRelative package.FullName
                   if jenkinsOnWindows then
-                      sh $"dotnet nupkg-validator {package} -v {version} -k {Paths.SignKey} -t {output} -r true"
+                      sh $"dotnet nupkg-validator validate {package} -v {version} -k {Paths.SignKey} -t {output} -r"
                   else
-                      sh $"dotnet nupkg-validator {package} -v {version} -k {Paths.SignKey} -t {output}" }
+                      sh $"dotnet nupkg-validator validate {package} -v {version} -k {Paths.SignKey} -t {output}" }
         | GenerateApiChanges -> target [] {
               let version = Versions.current.Value
               let tfm = Paths.MainTFM
@@ -71,6 +74,8 @@ let main argv =
                   let id = Path.GetFileNameWithoutExtension(package.Name).Replace("." + version, "")
                   printfn "(%s) -> (%s)" id version
                   let report = Path.Combine(output, $"breaking-changes-{id}.md")
+                  // assembly-differ is held at 0.17.0 in dotnet-tools.json: 0.18.0 and 0.18.1 crash resolving previous-nuget
+                  // (NuGet.Protocol cannot deserialize PackageDependencyGroup in the trimmed tool)
                   // quoted: an unquoted | would pipe
                   sh $"dotnet assembly-differ 'previous-nuget|{id}|{version}|{tfm}' 'directory|src/{id}/bin/Release/{tfm}' -a true --target {id} -f github-comment --output {report}" }
 

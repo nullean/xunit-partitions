@@ -198,9 +198,10 @@ public class PartitionTestAssemblyRunner : XunitTestAssemblyRunner
 				testCases,
 				ctxt.ExplicitOption,
 				ctxt.MessageBus,
-				ctxt.AssemblyTestCaseOrderer ?? DefaultTestCaseOrderer.Instance,
 				ctxt.Aggregator,
 				ctxt.CancellationTokenSource,
+				ctxt.ParallelMode,
+				ctxt.Scheduler,
 				combinedManager
 			)
 			.ConfigureAwait(false);

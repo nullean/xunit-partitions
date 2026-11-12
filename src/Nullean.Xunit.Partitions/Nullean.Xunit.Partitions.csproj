@@ -21,8 +21,4 @@
     <PackageReference Include="xunit" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
-  </ItemGroup>
-
 </Project>
