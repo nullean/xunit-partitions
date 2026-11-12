@@ -11,14 +11,14 @@ tests, only one partition runs at a time, tests inside a partition still run con
 | `src/Nullean.Xunit.Partitions` | the xUnit v2 package (netstandard2.0, netstandard2.1, net462) |
 | `src/Nullean.Xunit.Partitions.v3` | the xUnit v3 package (netstandard2.0), with its own `README.md` |
 | `src/*/skills` | the agent skill packed into each package (`skills/<name>/SKILL.md`) |
-| `tests/Nullean.Xunit.Partitions.Tests` | v2 tests, on net10.0 (plus net462 on Windows) |
-| `tests/Nullean.Xunit.Partitions.v3.Tests` | v3 tests, an xUnit v3 executable on net10.0 |
+| `tests/Nullean.Xunit.Partitions.Tests` | v2 tests, on net11.0 (plus net462 on Windows) |
+| `tests/Nullean.Xunit.Partitions.v3.Tests` | v3 tests, an xUnit v3 executable on net11.0 |
 | `build/scripts` | the F# build ([Nullean.Make.Fs](https://www.nuget.org/packages/Nullean.Make.Fs), net11.0) the `mise` tasks call |
 | `build/keys` | the strong-name key pair |
 
 ## Commands
 
-mise installs the SDK pinned in `global.json` (plus the net10.0 runtime the tests run on). Run everything through it:
+mise installs the SDK pinned in `global.json`. Run everything through it:
 
 ```bash
 mise run build    # build the solution
@@ -49,7 +49,7 @@ exactly one release label. Package output and API reports go to `build/output`.
   one usually needs the same change in the other.
 - `mise run test` runs the tests through `dotnet test` (VSTest). The v3 test project has no VSTest adapter, so it is
   built but not run there; run it directly with
-  `dotnet tests/Nullean.Xunit.Partitions.v3.Tests/bin/Release/net10.0/Nullean.Xunit.Partitions.v3.Tests.dll`.
+  `dotnet tests/Nullean.Xunit.Partitions.v3.Tests/bin/Release/net11.0/Nullean.Xunit.Partitions.v3.Tests.dll`.
 - Package versions live in `Directory.Packages.props` (Central Package Management), never on a `PackageReference`.
   Package metadata lives in `Directory.Build.props`; a project file keeps only id, title, description and tags.
 - The packed skills are written from the code, and every snippet in them must compile: update them with the public
