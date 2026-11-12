@@ -3,9 +3,8 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"/>
   <ItemGroup>
     <PackageReference Include="Nullean.VsTest.Pretty.TestLogger" PrivateAssets="All" />
-    <PackageReference Include="GitHubActionsTestLogger">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <!-- all assets: from 3.0 it also self-registers as a Microsoft.Testing.Platform extension in the xUnit v3
+         executable, and that generated registration needs the compile assets -->
+    <PackageReference Include="GitHubActionsTestLogger" PrivateAssets="All" />
   </ItemGroup>
 </Project>

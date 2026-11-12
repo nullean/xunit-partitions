@@ -42,7 +42,7 @@ internal class PartitionTestFrameworkExecutor<TOptions>(TOptions options, IXunit
 		}
 		catch (Exception e)
 		{
-			executionMessageSink.OnMessage(ErrorMessage.FromException(e));
+			executionMessageSink.OnMessage(ErrorMessage.FromException(e, TestAssembly.UniqueID));
 			throw;
 		}
 	}

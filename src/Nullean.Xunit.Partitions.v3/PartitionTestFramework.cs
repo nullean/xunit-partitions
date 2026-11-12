@@ -27,7 +27,7 @@ public class PartitionTestFramework<TOptions> : XunitTestFramework where TOption
 	protected override ITestFrameworkExecutor CreateExecutor(Assembly assembly)
 	{
 		var options = PartitionOptionsAttribute.GetOptions<TOptions>(assembly);
-		var testAssembly = new XunitTestAssembly(assembly);
+		var testAssembly = new XunitTestAssembly(assembly, configFilePath: null);
 		return new PartitionTestFrameworkExecutor<TOptions>(options, testAssembly);
 	}
 }
