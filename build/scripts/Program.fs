@@ -74,9 +74,7 @@ let main argv =
                   let id = Path.GetFileNameWithoutExtension(package.Name).Replace("." + version, "")
                   printfn "(%s) -> (%s)" id version
                   let report = Path.Combine(output, $"breaking-changes-{id}.md")
-                  // assembly-differ is held at 0.17.0 in dotnet-tools.json: 0.18.0 and 0.18.1 crash resolving previous-nuget
-                  // (NuGet.Protocol cannot deserialize PackageDependencyGroup in the trimmed tool)
                   // quoted: an unquoted | would pipe
-                  sh $"dotnet assembly-differ 'previous-nuget|{id}|{version}|{tfm}' 'directory|src/{id}/bin/Release/{tfm}' -a true --target {id} -f github-comment --output {report}" }
+                  sh $"dotnet assembly-differ diff 'previous-nuget|{id}|{version}|{tfm}' 'directory|src/{id}/bin/Release/{tfm}' -a --target {id} -f github-comment --output {report}" }
 
     app.RunAsync(argv).GetAwaiter().GetResult()
