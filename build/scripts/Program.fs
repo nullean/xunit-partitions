@@ -48,8 +48,8 @@ let main argv =
               for project in projectsToClean () do
                   sh $"dotnet clean {project} -c Release -v q" }
         | Build -> command {
-              composes [Clean]
-              executes (shell { sh $"dotnet build -c Release" }) }
+              composes [Clean] }
+                   |> executes { sh $"dotnet build -c Release" }
         // only the v2 project: xUnit v3 4.x makes the v3 project a Microsoft.Testing.Platform v2 application, which
         // fails `dotnet test` in VSTest mode; it never had a VSTest adapter, so it was only ever built here
         | Test -> target [Build] {
