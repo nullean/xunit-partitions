@@ -13,7 +13,7 @@ tests, only one partition runs at a time, tests inside a partition still run con
 | `src/*/skills` | the agent skill packed into each package (`skills/<name>/SKILL.md`) |
 | `tests/Nullean.Xunit.Partitions.Tests` | v2 tests, on net11.0 (plus net462 on Windows) |
 | `tests/Nullean.Xunit.Partitions.v3.Tests` | v3 tests, an xUnit v3 executable on net11.0 |
-| `build/scripts` | the F# build ([Nullean.Make.Fs](https://www.nuget.org/packages/Nullean.Make.Fs), net11.0) the `mise` tasks call |
+| `build/scripts` | the F# build ([Runna.Fs](https://www.nuget.org/packages/Runna.Fs), net11.0) the `mise` tasks call |
 | `build/keys` | the strong-name key pair |
 
 ## Commands
@@ -54,7 +54,7 @@ exactly one release label. Package output and API reports go to `build/output`.
   Package metadata lives in `Directory.Build.props`; a project file keeps only id, title, description and tags.
 - The packed skills are written from the code, and every snippet in them must compile: update them with the public
   API, in both packages.
-- Build targets are Make.Fs `target { }` blocks in `build/scripts/Program.fs` whose commands are Proc.Fs `sh $"…"`
+- Build targets are Runna.Fs `target { }` blocks in `build/scripts/Program.fs` whose commands are Proc.Fs `sh $"…"`
   lines; values come from `text`/`lines` inside `shell { }`. Do not call the C# `ProcNet` API from the build.
 - Formatting is curb's, from `.editorconfig` (the nullean template, identical in every repo): run `mise run format`
   before committing C#. CI fails on drift. See the [format](.claude/skills/format/SKILL.md) skill.
